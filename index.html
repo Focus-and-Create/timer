@@ -8,13 +8,13 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --bg: #0d0d1a;
-            --surface: #16162a;
-            --surface2: #1e1e36;
-            --accent: #7c6af7;
-            --accent2: #f76ac8;
-            --text: #e8e8f4;
-            --muted: #5a5a7a;
+            --bg: #100b20;
+            --surface: rgba(255,255,255,0.08);
+            --surface2: rgba(255,255,255,0.04);
+            --accent: #a78bfa;
+            --accent2: #f472b6;
+            --text: #f0eeff;
+            --muted: #7878a8;
         }
 
         body {
@@ -24,10 +24,10 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-height: 100vh;
-            padding: 2.5rem 1.5rem 4rem;
+            height: 100vh;
+            overflow: hidden;
+            padding: 1.2rem 1.5rem 1.2rem;
             position: relative;
-            overflow-x: hidden;
         }
 
         body::before {
@@ -35,8 +35,9 @@
             position: fixed;
             inset: 0;
             background:
-                radial-gradient(ellipse 60% 40% at 20% 10%, rgba(124,106,247,0.12) 0%, transparent 60%),
-                radial-gradient(ellipse 50% 40% at 80% 90%, rgba(247,106,200,0.08) 0%, transparent 60%);
+                radial-gradient(ellipse 70% 60% at 10% 5%,  rgba(139,92,246,0.45) 0%, transparent 55%),
+                radial-gradient(ellipse 60% 55% at 92% 95%, rgba(236,72,153,0.4)  0%, transparent 55%),
+                radial-gradient(ellipse 50% 45% at 55% 50%, rgba(56,189,248,0.12) 0%, transparent 60%);
             pointer-events: none;
             z-index: 0;
         }
@@ -46,7 +47,7 @@
         /* Header */
         .header {
             text-align: center;
-            margin-bottom: 2.5rem;
+            margin-bottom: 0.9rem;
         }
 
         .logo {
@@ -62,11 +63,12 @@
             align-items: center;
             gap: 0.5rem;
             padding: 0.3rem 0.9rem;
-            background: var(--surface);
+            background: rgba(255,255,255,0.09);
+            backdrop-filter: blur(12px);
             border-radius: 2rem;
             font-size: 0.8rem;
             color: var(--muted);
-            border: 1px solid rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.12);
         }
 
         .week-dot {
@@ -80,9 +82,9 @@
         /* Timer wrapper */
         .timer-wrapper {
             position: relative;
-            width: 260px;
-            height: 260px;
-            margin-bottom: 1.5rem;
+            width: 200px;
+            height: 200px;
+            margin-bottom: 0.8rem;
         }
 
         .timer-svg {
@@ -93,7 +95,7 @@
 
         .timer-track {
             fill: none;
-            stroke: var(--surface2);
+            stroke: rgba(255,255,255,0.07);
             stroke-width: 10;
         }
 
@@ -109,12 +111,12 @@
         .timer-glow {
             fill: none;
             stroke: url(#gradGlow);
-            stroke-width: 18;
+            stroke-width: 20;
             stroke-linecap: round;
             stroke-dasharray: 706.86;
             stroke-dashoffset: 0;
-            opacity: 0.2;
-            filter: blur(4px);
+            opacity: 0.3;
+            filter: blur(6px);
         }
 
         .timer-center {
@@ -128,7 +130,7 @@
         }
 
         .timer-display {
-            font-size: 3.2rem;
+            font-size: 2.6rem;
             font-weight: 700;
             letter-spacing: -3px;
             font-variant-numeric: tabular-nums;
@@ -146,25 +148,26 @@
         .duration-row {
             display: flex;
             gap: 0.5rem;
-            margin-bottom: 1.5rem;
+            margin-bottom: 0.8rem;
         }
 
         .dur-btn {
             padding: 0.35rem 0.9rem;
             border-radius: 2rem;
-            border: 1px solid rgba(255,255,255,0.07);
-            background: var(--surface);
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.06);
+            backdrop-filter: blur(8px);
             color: var(--muted);
             font-size: 0.8rem;
             cursor: pointer;
             transition: all 0.2s;
         }
 
-        .dur-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.15); }
+        .dur-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
         .dur-btn.active {
             border-color: var(--accent);
             color: var(--accent);
-            background: rgba(124,106,247,0.12);
+            background: rgba(167,139,250,0.15);
         }
 
         /* Controls */
@@ -172,19 +175,19 @@
             display: flex;
             align-items: center;
             gap: 1.25rem;
-            margin-bottom: 3rem;
+            margin-bottom: 1.2rem;
         }
 
         .btn-start {
-            width: 72px;
-            height: 72px;
+            width: 64px;
+            height: 64px;
             border-radius: 50%;
             border: none;
             background: linear-gradient(135deg, var(--accent), var(--accent2));
             color: white;
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             cursor: pointer;
-            box-shadow: 0 0 0 0 rgba(124,106,247,0.5);
+            box-shadow: 0 0 0 0 rgba(167,139,250,0.5);
             transition: transform 0.15s, box-shadow 0.3s;
             display: flex;
             align-items: center;
@@ -193,7 +196,7 @@
 
         .btn-start:hover {
             transform: scale(1.06);
-            box-shadow: 0 0 30px rgba(124,106,247,0.45);
+            box-shadow: 0 0 28px rgba(167,139,250,0.5);
         }
 
         .btn-start:active { transform: scale(0.94); }
@@ -203,34 +206,39 @@
         }
 
         @keyframes pulseRing {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(124,106,247,0.4); }
-            50% { box-shadow: 0 0 0 12px rgba(124,106,247,0); }
+            0%, 100% { box-shadow: 0 0 0 0 rgba(167,139,250,0.45); }
+            50% { box-shadow: 0 0 0 14px rgba(167,139,250,0); }
         }
 
         .btn-ghost {
-            padding: 0.5rem 1.2rem;
+            padding: 0.45rem 1.1rem;
             border-radius: 2rem;
-            border: 1px solid rgba(255,255,255,0.07);
-            background: none;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(8px);
             color: var(--muted);
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             cursor: pointer;
             transition: all 0.2s;
         }
 
-        .btn-ghost:hover { color: var(--text); border-color: rgba(255,255,255,0.15); }
+        .btn-ghost:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
 
         /* Melody section */
         .melody-section {
             width: 100%;
             max-width: 560px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
         }
 
         .section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.5rem;
         }
 
         .section-label {
@@ -249,9 +257,9 @@
         /* Progress bar */
         .progress-bar-wrap {
             height: 3px;
-            background: var(--surface2);
+            background: rgba(255,255,255,0.06);
             border-radius: 2px;
-            margin-bottom: 1.25rem;
+            margin-bottom: 0.8rem;
             overflow: hidden;
         }
 
@@ -266,13 +274,15 @@
         .notes-grid {
             display: flex;
             flex-wrap: wrap;
-            gap: 0.6rem;
-            padding: 1.5rem;
-            background: var(--surface);
+            gap: 0.5rem;
+            padding: 1rem 1.2rem;
+            background: rgba(255,255,255,0.06);
+            backdrop-filter: blur(20px);
             border-radius: 1.2rem;
-            min-height: 96px;
-            border: 1px solid rgba(255,255,255,0.04);
+            min-height: 80px;
+            border: 1px solid rgba(255,255,255,0.1);
             align-items: center;
+            flex: 1;
         }
 
         .empty-hint {
@@ -315,11 +325,11 @@
 
         /* Play button */
         .btn-play-melody {
-            margin-top: 0.75rem;
+            margin-top: 0.6rem;
             width: 100%;
-            padding: 0.7rem;
+            padding: 0.6rem;
             border-radius: 0.75rem;
-            border: 1px dashed rgba(255,255,255,0.1);
+            border: 1px dashed rgba(255,255,255,0.15);
             background: none;
             color: var(--muted);
             font-size: 0.85rem;
@@ -330,7 +340,7 @@
         .btn-play-melody:hover {
             border-color: var(--accent);
             color: var(--accent);
-            background: rgba(124,106,247,0.06);
+            background: rgba(167,139,250,0.08);
         }
 
         .btn-play-melody:disabled {
@@ -342,11 +352,11 @@
         /* Completion banner */
         .banner {
             display: none;
-            margin-top: 1rem;
-            padding: 1.25rem;
+            margin-top: 0.6rem;
+            padding: 0.9rem 1.25rem;
             text-align: center;
-            background: linear-gradient(135deg, rgba(124,106,247,0.15), rgba(247,106,200,0.12));
-            border: 1px solid rgba(124,106,247,0.25);
+            background: linear-gradient(135deg, rgba(167,139,250,0.18), rgba(244,114,182,0.14));
+            border: 1px solid rgba(167,139,250,0.3);
             border-radius: 1rem;
             animation: fadeSlideUp 0.6s cubic-bezier(0.34,1.56,0.64,1);
         }
@@ -367,7 +377,7 @@
             inset: 0;
             pointer-events: none;
             opacity: 0;
-            background: radial-gradient(circle at center, rgba(124,106,247,0.25) 0%, transparent 65%);
+            background: radial-gradient(circle at center, rgba(167,139,250,0.35) 0%, transparent 65%);
             transition: opacity 0.3s;
             z-index: 50;
         }
@@ -492,6 +502,7 @@
         let timeLeft  = duration;
         let running   = false;
         let intervalId = null;
+        let melodyLoopId = null;
         let notes = [];          // array of note indices earned this week
         let weekKey = '';
         let audioCtx = null;
@@ -623,6 +634,7 @@
                 startBtn.classList.remove('running');
                 timerStatus.textContent = '일시정지';
             } else {
+                stopMelodyLoop();
                 getAudioCtx(); // unlock audio on first user gesture
                 running = true;
                 startBtn.textContent = '⏸';
@@ -632,8 +644,16 @@
             }
         }
 
+        function stopMelodyLoop() {
+            if (melodyLoopId) {
+                clearInterval(melodyLoopId);
+                melodyLoopId = null;
+            }
+        }
+
         function resetTimer() {
             clearInterval(intervalId);
+            stopMelodyLoop();
             running = false;
             timeLeft = duration;
             timerDisplay.textContent = fmt(timeLeft);
@@ -644,26 +664,33 @@
         }
 
         // ── Completion ─────────────────────────────────────────────
+        function startMelodyLoop() {
+            if (!notes.length) return;
+            const loopMs = (notes.length * 0.58 + 1.2) * 1000;
+            playMelody(i => highlightChip(i));
+            melodyLoopId = setInterval(() => {
+                playMelody(i => highlightChip(i));
+            }, loopMs);
+        }
+
         function onComplete() {
             if (notes.length < MELODY_FREQS.length) {
                 notes.push(notes.length);
                 saveState();
                 renderNotes();
 
-                // flash
                 flash.classList.add('on');
                 setTimeout(() => flash.classList.remove('on'), 700);
 
-                // floating note
                 spawnFloatingNote();
-
-                // play melody with highlight
-                setTimeout(() => playMelody(i => highlightChip(i)), 900);
             }
 
             if (notes.length >= MELODY_FREQS.length) {
                 banner.classList.add('show');
             }
+
+            // 멜로디 루프 시작 — 리셋/새 세션 시작 전까지 반복
+            setTimeout(() => startMelodyLoop(), 900);
         }
 
         function spawnFloatingNote() {
