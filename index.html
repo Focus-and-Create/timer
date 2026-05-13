@@ -502,6 +502,7 @@
         let timeLeft  = duration;
         let running   = false;
         let intervalId = null;
+        let melodyLoopId = null;
         let notes = [];          // array of note indices earned this week
         let weekKey = '';
         let audioCtx = null;
@@ -633,6 +634,7 @@
                 startBtn.classList.remove('running');
                 timerStatus.textContent = '일시정지';
             } else {
+                stopMelodyLoop();
                 getAudioCtx(); // unlock audio on first user gesture
                 running = true;
                 startBtn.textContent = '⏸';
@@ -642,8 +644,16 @@
             }
         }
 
+        function stopMelodyLoop() {
+            if (melodyLoopId) {
+                clearInterval(melodyLoopId);
+                melodyLoopId = null;
+            }
+        }
+
         function resetTimer() {
             clearInterval(intervalId);
+            stopMelodyLoop();
             running = false;
             timeLeft = duration;
             timerDisplay.textContent = fmt(timeLeft);
@@ -654,26 +664,33 @@
         }
 
         // ── Completion ─────────────────────────────────────────────
+        function startMelodyLoop() {
+            if (!notes.length) return;
+            const loopMs = (notes.length * 0.58 + 1.2) * 1000;
+            playMelody(i => highlightChip(i));
+            melodyLoopId = setInterval(() => {
+                playMelody(i => highlightChip(i));
+            }, loopMs);
+        }
+
         function onComplete() {
             if (notes.length < MELODY_FREQS.length) {
                 notes.push(notes.length);
                 saveState();
                 renderNotes();
 
-                // flash
                 flash.classList.add('on');
                 setTimeout(() => flash.classList.remove('on'), 700);
 
-                // floating note
                 spawnFloatingNote();
-
-                // play melody with highlight
-                setTimeout(() => playMelody(i => highlightChip(i)), 900);
             }
 
             if (notes.length >= MELODY_FREQS.length) {
                 banner.classList.add('show');
             }
+
+            // 멜로디 루프 시작 — 리셋/새 세션 시작 전까지 반복
+            setTimeout(() => startMelodyLoop(), 900);
         }
 
         function spawnFloatingNote() {
