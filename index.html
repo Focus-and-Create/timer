@@ -49,7 +49,7 @@ body::before{
 #appWrap{
   position:relative;z-index:1;
   display:flex;flex-direction:column;align-items:center;
-  padding:20px 16px 40px;
+  padding:60px 16px 40px;
   min-height:100vh;
 }
 /* Main card */
@@ -238,7 +238,7 @@ kbd{display:inline-block;padding:1px 6px;border:1px solid var(--muted);border-ra
 .lp-record{border-radius:50%;background:#1a1a1a;border:3px solid var(--ink);position:relative;flex-shrink:0}
 .vinyl-spinning{animation:vinylSpin 3s linear infinite}
 /* Settings */
-#settingsView{padding:24px}
+#settingsView{padding:24px 28px 32px;}
 .mel-card{
   background:#fff;border:3px solid var(--ink);border-radius:16px;padding:14px;
   box-shadow:3px 3px 0 var(--ink);cursor:pointer;transition:all .12s;
@@ -502,15 +502,36 @@ kbd{display:inline-block;padding:1px 6px;border:1px solid var(--muted);border-ra
 <script>
 // ── Melody Definitions ──────────────────────────────────────────────
 const MELODIES = [
-  { id:'ode', name:'Ode to Joy', emoji:'🎵', desc:'Ode to Joy · 14♪', total:14,
+  { id:'ode', name:'Ode to Joy', emoji:'🎵', desc:'Beethoven · 14♪', total:14,
     freqs:[329.63,329.63,349.23,392,392,349.23,329.63,293.66,261.63,261.63,293.66,329.63,329.63,293.66],
     noteNames:['E','E','F','G','G','F','E','D','C','C','D','E','E','D'] },
-  { id:'birthday', name:'Happy Birthday', emoji:'🎂', desc:'Happy Birthday · 12♪', total:12,
+  { id:'birthday', name:'Happy Birthday', emoji:'🎂', desc:'Traditional · 12♪', total:12,
     freqs:[261.63,261.63,293.66,261.63,349.23,329.63,261.63,261.63,293.66,261.63,392,349.23],
     noteNames:['C','C','D','C','F','E','C','C','D','C','G','F'] },
-  { id:'twinkle', name:'Twinkle Twinkle', emoji:'⭐', desc:'Twinkle Twinkle · 14♪', total:14,
+  { id:'twinkle', name:'Twinkle Twinkle', emoji:'⭐', desc:'Traditional · 14♪', total:14,
     freqs:[261.63,261.63,392,392,440,440,392,349.23,349.23,329.63,329.63,293.66,293.66,261.63],
     noteNames:['C','C','G','G','A','A','G','F','F','E','E','D','D','C'] },
+  { id:'fur', name:'Für Elise', emoji:'🌹', desc:'Beethoven · 12♪', total:12,
+    freqs:[329.63,311.13,329.63,311.13,329.63,246.94,293.66,261.63,220,261.63,329.63,440],
+    noteNames:['E','Eb','E','Eb','E','B','D','C','A','C','E','A'] },
+  { id:'canon', name:'Canon in D', emoji:'🎻', desc:'Pachelbel · 14♪', total:14,
+    freqs:[293.66,246.94,220,246.94,261.63,220,196,220,261.63,246.94,220,246.94,261.63,293.66],
+    noteNames:['D','B','A','B','C','A','G','A','C','B','A','B','C','D'] },
+  { id:'moonlight', name:'Moonlight Sonata', emoji:'🌙', desc:'Beethoven · 12♪', total:12,
+    freqs:[207.65,246.94,311.13,207.65,246.94,311.13,196,246.94,311.13,185,233.08,311.13],
+    noteNames:['Ab','B','Eb','Ab','B','Eb','G','B','Eb','F#','Bb','Eb'] },
+  { id:'jingle', name:'Jingle Bells', emoji:'🔔', desc:'Traditional · 14♪', total:14,
+    freqs:[329.63,329.63,329.63,329.63,329.63,329.63,329.63,392,261.63,293.66,329.63,349.23,349.23,349.23],
+    noteNames:['E','E','E','E','E','E','E','G','C','D','E','F','F','F'] },
+  { id:'entertainer', name:'The Entertainer', emoji:'🎩', desc:'Scott Joplin · 14♪', total:14,
+    freqs:[311.13,329.63,311.13,261.63,293.66,329.63,293.66,261.63,246.94,261.63,293.66,261.63,246.94,220],
+    noteNames:['Eb','E','Eb','C','D','E','D','C','B','C','D','C','B','A'] },
+  { id:'minuet', name:'Minuet in G', emoji:'💃', desc:'Bach · 12♪', total:12,
+    freqs:[391.99,349.23,329.63,293.66,261.63,293.66,329.63,391.99,440,391.99,349.23,391.99],
+    noteNames:['G','F','E','D','C','D','E','G','A','G','F','G'] },
+  { id:'joy', name:'Joy to the World', emoji:'✨', desc:'Handel · 10♪', total:10,
+    freqs:[523.25,493.88,440,391.99,349.23,349.23,391.99,440,493.88,523.25],
+    noteNames:['C','B','A','G','F','F','G','A','B','C'] },
 ];
 
 const NOTE_STEP=0.58,NOTE_DUR=0.55;
