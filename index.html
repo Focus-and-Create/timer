@@ -55,22 +55,19 @@ body::before{
 /* Main card */
 #mainCard{
   background:var(--card);
-  border:5px solid var(--ink);
   border-radius:50px;
   width:100%;max-width:1100px;
-  overflow:hidden;
-  box-shadow:8px 8px 0 var(--ink);
+  overflow:visible;
+  position:relative;
 }
 /* Nav strip */
 #navStrip{
   background:var(--nav-blue);
-  border:5px solid var(--ink);
   border-radius:30px;
   margin:16px 20px 0;
   padding:0 24px;
   height:64px;
   display:flex;align-items:center;justify-content:space-between;
-  box-shadow:4px 4px 0 var(--ink);
 }
 .nav-logo{font-family:'Caveat',cursive;font-size:1.7rem;font-weight:700;letter-spacing:-.5px}
 .nav-tabs{display:flex;gap:6px}
@@ -93,26 +90,25 @@ body::before{
 /* Info row */
 .info-row{display:flex;gap:14px}
 .lcd-box{
-  background:var(--ink);border:5px solid var(--ink);border-radius:25px;
+  background:#f0f4f8;border-radius:25px;
   padding:16px 20px;display:flex;flex-direction:column;justify-content:center;gap:4px;
-  box-shadow:4px 4px 0 rgba(36,31,26,.3);
 }
 .lcd-time{
   font-family:'Major Mono Display',monospace;font-size:2.6rem;
-  color:#7fe3c8;letter-spacing:-2px;line-height:1;
+  color:var(--ink);letter-spacing:-2px;line-height:1;
 }
-.lcd-label{font-family:'Major Mono Display',monospace;font-size:.75rem;color:#ff7eb0;letter-spacing:.08em;line-height:1.5}
-.lcd-sub{font-family:'Major Mono Display',monospace;font-size:.7rem;color:#c9b3ff;letter-spacing:.06em;line-height:1.4}
+.lcd-label{font-family:'Major Mono Display',monospace;font-size:.75rem;color:var(--ink-soft);letter-spacing:.08em;line-height:1.5}
+.lcd-sub{font-family:'Major Mono Display',monospace;font-size:.7rem;color:var(--muted);letter-spacing:.06em;line-height:1.4}
 .session-box{
-  flex:1;background:var(--ink);border:5px solid var(--ink);border-radius:25px;
+  flex:1;background:var(--bg);border-radius:25px;
   padding:16px 20px;display:flex;flex-direction:column;justify-content:center;gap:4px;
 }
-.session-label{font-size:.8rem;color:#9a8d80;font-weight:500}
-.session-num{font-family:'Major Mono Display',monospace;font-size:2rem;color:#fff08a;line-height:1}
+.session-label{font-size:.8rem;color:var(--muted);font-weight:500}
+.session-num{font-family:'Major Mono Display',monospace;font-size:2rem;color:var(--ink);line-height:1}
 /* Melody track box */
 .melody-box{
-  background:var(--bg);border:5px solid var(--ink);border-radius:25px;
-  padding:14px 16px;box-shadow:4px 4px 0 var(--ink);
+  background:var(--bg);border-radius:25px;
+  padding:14px 16px;
 }
 .melody-box-label{
   font-family:'Major Mono Display',monospace;font-size:.75rem;color:var(--muted);
@@ -155,21 +151,21 @@ body::before{
 /* Transport */
 .transport{display:flex;gap:12px;align-items:center}
 .btn-round{
-  width:64px;height:64px;border-radius:50%;border:5px solid var(--ink);
+  width:64px;height:64px;border-radius:50%;border:none;
   background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center;
-  font-size:1.2rem;font-weight:700;transition:all .12s;box-shadow:4px 4px 0 var(--ink);
-  flex-shrink:0;
+  font-size:1.2rem;font-weight:700;transition:transform .12s;
+  flex-shrink:0;position:relative;
 }
-.btn-round:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--ink)}
-.btn-round:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--ink)}
+.btn-round:hover{transform:scale(1.06)}
+.btn-round:active{transform:scale(.96)}
 .btn-main{
-  flex:1;height:64px;border-radius:99px;border:5px solid var(--ink);
+  flex:1;height:64px;border-radius:99px;border:none;
   background:var(--nav-blue);cursor:pointer;display:flex;align-items:center;justify-content:center;
-  gap:8px;font-size:1rem;font-weight:700;transition:all .12s;box-shadow:4px 4px 0 var(--ink);
-  font-family:'Noto Sans KR',sans-serif;color:var(--ink);
+  gap:8px;font-size:1rem;font-weight:700;transition:transform .12s;
+  font-family:'Noto Sans KR',sans-serif;color:var(--ink);position:relative;
 }
-.btn-main:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--ink)}
-.btn-main:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--ink)}
+.btn-main:hover{transform:scale(1.03)}
+.btn-main:active{transform:scale(.97)}
 .btn-main.running{background:var(--mint)}
 .btn-abandon-row{display:flex;justify-content:center;margin-top:-4px}
 .btn-abandon{
@@ -361,13 +357,18 @@ kbd{display:inline-block;padding:1px 6px;border:1px solid var(--muted);border-ra
             <!-- rough.js hand-drawn circles go here -->
             <g id="roughLayer"></g>
             <!-- Progress arc (fills clockwise from 12 o'clock) -->
-            <path id="dialProgress" d="" fill="url(#progressGrad)" opacity=".55"/>
+            <path id="dialProgress" d="" fill="url(#progressGrad)" opacity=".5"/>
+            <!-- Tick marks (N S W E) - short, not full crosshairs -->
+            <line x1="210" y1="14" x2="210" y2="58" stroke="#241f1a" stroke-width="2.5" stroke-linecap="round" opacity=".5"/>
+            <line x1="210" y1="362" x2="210" y2="406" stroke="#241f1a" stroke-width="2.5" stroke-linecap="round" opacity=".5"/>
+            <line x1="14" y1="210" x2="58" y2="210" stroke="#241f1a" stroke-width="2.5" stroke-linecap="round" opacity=".5"/>
+            <line x1="362" y1="210" x2="406" y2="210" stroke="#241f1a" stroke-width="2.5" stroke-linecap="round" opacity=".5"/>
             <!-- Center dot (lavender) -->
             <circle id="dialCenterDot" cx="210" cy="210" r="22"
               fill="url(#lavGrad)" stroke="#241f1a" stroke-width="2.5"/>
             <!-- Pointer line -->
             <g id="dialPointer" style="transform-origin:210px 210px;">
-              <line x1="210" y1="210" x2="210" y2="38" stroke="#241f1a" stroke-width="3" stroke-linecap="round"/>
+              <line x1="210" y1="210" x2="210" y2="50" stroke="#241f1a" stroke-width="3" stroke-linecap="round"/>
             </g>
           </svg>
         </div>
@@ -385,7 +386,7 @@ kbd{display:inline-block;padding:1px 6px;border:1px solid var(--muted);border-ra
             <div class="session-box">
               <div class="session-label">오늘 세션 수</div>
               <div class="session-num" id="sessionCount">0</div>
-              <div class="lcd-sub" id="lcdProgress" style="color:#7fe3c8;margin-top:2px;">0 / 14</div>
+              <div class="lcd-sub" id="lcdProgress" style="margin-top:2px;">0 / 14</div>
             </div>
           </div>
 
@@ -627,6 +628,76 @@ function startMelodyLoop(noteArr,melodyId){
 function stopMelodyLoop(){
   loopGen++;clearTimeout(loopTimeoutId);loopTimeoutId=null;
   if(audioCtx){audioCtx.close();audioCtx=null;}
+}
+
+// ── Rough UI borders ─────────────────────────────────────────────────
+function initRoughUI(){
+  const card=document.getElementById('mainCard');
+  if(!window.rough||!card)return;
+
+  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.id='roughOverlay';
+  svg.setAttribute('aria-hidden','true');
+  svg.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:0';
+  card.insertBefore(svg,card.firstChild);
+
+  // All card children except the SVG overlay sit above it
+  Array.from(card.children).forEach(c=>{
+    if(c!==svg){c.style.position='relative';c.style.zIndex='1';}
+  });
+
+  const rc=rough.svg(svg);
+  const ink='#241f1a';
+
+  function rrp(x,y,w,h,r){
+    r=Math.min(r,w/2,h/2);
+    return `M${x+r},${y} h${w-2*r} a${r},${r},0,0,1,${r},${r} v${h-2*r} a${r},${r},0,0,1,${-r},${r} h${-w+2*r} a${r},${r},0,0,1,${-r},${-r} v${-h+2*r} a${r},${r},0,0,1,${r},${-r} z`;
+  }
+
+  function draw(){
+    while(svg.firstChild)svg.firstChild.remove();
+    const base=card.getBoundingClientRect();
+    function p(el){const r=el.getBoundingClientRect();return{x:r.left-base.left,y:r.top-base.top,w:r.width,h:r.height};}
+    function shape(d,fill,roughness,seed,sw){
+      return rc.path(d,{stroke:ink,strokeWidth:sw||3,fill,fillStyle:'solid',roughness,seed,bowing:0.8});
+    }
+    function circ(cx,cy,d,fill,roughness,seed,sw){
+      return rc.circle(cx,cy,d,{stroke:ink,strokeWidth:sw||3,fill,fillStyle:'solid',roughness,seed,bowing:0.8});
+    }
+
+    // Card outline
+    const cw=card.offsetWidth,ch=card.offsetHeight;
+    svg.appendChild(shape(rrp(4,4,cw-8,ch-8,46),'#edf6ff',3.2,1,4));
+
+    // Nav strip
+    const nav=p(document.getElementById('navStrip'));
+    svg.appendChild(shape(rrp(nav.x,nav.y,nav.w,nav.h,28),'#d0e7ff',2.5,2,3));
+
+    // LCD timer box
+    const lcd=document.querySelector('.lcd-box');
+    if(lcd){const q=p(lcd);svg.appendChild(shape(rrp(q.x,q.y,q.w,q.h,22),'#f0f4f8',2.5,3,3));}
+
+    // Session box
+    const sess=document.querySelector('.session-box');
+    if(sess){const q=p(sess);svg.appendChild(shape(rrp(q.x,q.y,q.w,q.h,22),'#fffaf5',2.5,4,3));}
+
+    // Melody box
+    const mel=document.querySelector('.melody-box');
+    if(mel){const q=p(mel);svg.appendChild(shape(rrp(q.x,q.y,q.w,q.h,22),'#fffaf5',2.5,5,3));}
+
+    // Transport buttons
+    const rb=document.getElementById('resetBtn');
+    if(rb){const q=p(rb);svg.appendChild(circ(q.x+q.w/2,q.y+q.h/2,Math.min(q.w,q.h)*0.92,'#fffaf5',2.5,6,3));}
+
+    const sb=document.getElementById('startBtn');
+    if(sb){const q=p(sb);svg.appendChild(shape(rrp(q.x,q.y,q.w,q.h,q.h/2),'#d0e7ff',2.5,7,3));}
+
+    const tb=document.getElementById('timeSetBtn');
+    if(tb){const q=p(tb);svg.appendChild(circ(q.x+q.w/2,q.y+q.h/2,Math.min(q.w,q.h)*0.92,'#fffaf5',2.5,8,3));}
+  }
+
+  draw();
+  new ResizeObserver(draw).observe(card);
 }
 
 // ── Rough dial init ──────────────────────────────────────────────────
@@ -1083,6 +1154,7 @@ document.addEventListener('keydown',e=>{
 
 // ── Init ─────────────────────────────────────────────────────────────
 loadState();
+initRoughUI();
 initRoughDial();
 soundToggle.classList.toggle('on',soundOn);
 renderMelodyDots();renderPianoKeys();
