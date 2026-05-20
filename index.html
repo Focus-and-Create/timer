@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Focus Melody</title>
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Major+Mono+Display&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/roughjs@4.6.6/bundled/rough.js"></script>
 <style>
 :root{
   --bg:#fffaf5;
@@ -265,15 +266,6 @@ kbd{display:inline-block;padding:1px 6px;border:1px solid var(--muted);border-ra
 <!-- SVG gradient defs -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
-    <filter id="pencil" x="-12%" y="-12%" width="124%" height="124%">
-      <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="4" seed="7" result="noise"/>
-      <feDisplacementMap in="SourceGraphic" in2="noise" scale="6" xChannelSelector="R" yChannelSelector="G"/>
-    </filter>
-    <!-- extra-wobbly version for the outer ring -->
-    <filter id="pencil-strong" x="-15%" y="-15%" width="130%" height="130%">
-      <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="4" seed="3" result="noise"/>
-      <feDisplacementMap in="SourceGraphic" in2="noise" scale="9" xChannelSelector="R" yChannelSelector="G"/>
-    </filter>
     <linearGradient id="lavGrad" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#e8d8ff"/>
       <stop offset="50%" stop-color="#c9b3ff"/>
@@ -366,26 +358,16 @@ kbd{display:inline-block;padding:1px 6px;border:1px solid var(--muted);border-ra
         <!-- LEFT: Circular dial -->
         <div class="dial-area">
           <svg id="dialSvg" viewBox="0 0 420 420" style="width:min(420px,42vw);height:min(420px,42vw);min-width:260px;">
-            <!-- Outer ring (sketchy) -->
-            <circle id="dialOuterRing" cx="210" cy="210" r="196"
-              fill="none" stroke="var(--ink)" stroke-width="5"
-              filter="url(#pencil-strong)"/>
-            <!-- Inner filled circle -->
-            <circle id="dialInnerFill" cx="210" cy="210" r="172"
-              fill="#fffaf5" stroke="var(--ink)" stroke-width="4"
-              filter="url(#pencil)"/>
+            <!-- rough.js hand-drawn circles go here -->
+            <g id="roughLayer"></g>
             <!-- Progress arc (fills clockwise from 12 o'clock) -->
             <path id="dialProgress" d="" fill="url(#progressGrad)" opacity=".55"/>
-            <!-- Crosshairs: top, right, bottom, left -->
-            <line id="ch-top"    x1="210" y1="14"  x2="210" y2="406" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" filter="url(#pencil)" opacity=".35"/>
-            <line id="ch-mid"    x1="14"  y1="210" x2="406" y2="210" stroke="var(--ink)" stroke-width="2" stroke-linecap="round" filter="url(#pencil)" opacity=".35"/>
             <!-- Center dot (lavender) -->
             <circle id="dialCenterDot" cx="210" cy="210" r="22"
-              fill="url(#lavGrad)" stroke="var(--ink)" stroke-width="3"
-              filter="url(#pencil)"/>
+              fill="url(#lavGrad)" stroke="#241f1a" stroke-width="2.5"/>
             <!-- Pointer line -->
             <g id="dialPointer" style="transform-origin:210px 210px;">
-              <line x1="210" y1="210" x2="210" y2="38" stroke="var(--ink)" stroke-width="3" stroke-linecap="round"/>
+              <line x1="210" y1="210" x2="210" y2="38" stroke="#241f1a" stroke-width="3" stroke-linecap="round"/>
             </g>
           </svg>
         </div>
@@ -645,6 +627,37 @@ function startMelodyLoop(noteArr,melodyId){
 function stopMelodyLoop(){
   loopGen++;clearTimeout(loopTimeoutId);loopTimeoutId=null;
   if(audioCtx){audioCtx.close();audioCtx=null;}
+}
+
+// ── Rough dial init ──────────────────────────────────────────────────
+function initRoughDial(){
+  const svg=document.getElementById('dialSvg');
+  const layer=document.getElementById('roughLayer');
+  if(!window.rough||!svg||!layer)return;
+  const rc=rough.svg(svg);
+  const ink='#241f1a';
+
+  // Outer ring: blue-filled with wobbly border
+  const outer=rc.circle(210,210,392,{
+    stroke:ink,strokeWidth:3.5,
+    fill:'#d0e7ff',fillStyle:'solid',
+    roughness:3.8,seed:12
+  });
+  // Inner circle: cream fill
+  const inner=rc.circle(210,210,338,{
+    stroke:ink,strokeWidth:3,
+    fill:'#fffaf5',fillStyle:'solid',
+    roughness:2.8,seed:7
+  });
+  // Crosshair: vertical
+  const cv=rc.line(210,22,210,398,{stroke:ink,strokeWidth:1.5,roughness:2,seed:5,opacity:.35});
+  // Crosshair: horizontal
+  const ch=rc.line(22,210,398,210,{stroke:ink,strokeWidth:1.5,roughness:2,seed:9,opacity:.35});
+
+  layer.appendChild(outer);
+  layer.appendChild(inner);
+  layer.appendChild(cv);
+  layer.appendChild(ch);
 }
 
 // ── Dial ─────────────────────────────────────────────────────────────
@@ -1070,6 +1083,7 @@ document.addEventListener('keydown',e=>{
 
 // ── Init ─────────────────────────────────────────────────────────────
 loadState();
+initRoughDial();
 soundToggle.classList.toggle('on',soundOn);
 renderMelodyDots();renderPianoKeys();
 updateDisplays();updateDial();updateWeekLabel();
