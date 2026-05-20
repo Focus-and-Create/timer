@@ -1,1462 +1,1127 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Focus Melody</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        :root {
-            --bg: #faf5e8;
-            --surface: #fff;
-            --ink: #241f1a;
-            --ink-soft: #5a4f44;
-            --muted: #9a8d80;
-            --pink: #ff7eb0;
-            --mint: #7fe3c8;
-            --lav: #c9b3ff;
-            --peach: #ffc585;
-            --red: #ff5a5a;
-            --holo: linear-gradient(120deg, #ffd1f0 0%, #c9e8ff 25%, #d6ffd9 45%, #fff4c2 65%, #ffc6ec 85%, #a8d4ff 100%);
-            --holo-strong: linear-gradient(120deg, #ff7eb0 0%, #7fc8ff 22%, #7fe3c8 44%, #fff08a 66%, #c9b3ff 88%, #ff7eb0 100%);
-        }
-
-        body {
-            background: var(--bg);
-            color: var(--ink);
-            font-family: -apple-system, 'Segoe UI', sans-serif;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            opacity: .22;
-            background-image: radial-gradient(rgba(36,31,26,.2) 1px, transparent 1px);
-            background-size: 22px 22px;
-            mix-blend-mode: multiply;
-            z-index: 0;
-        }
-
-        /* ── Nav ── */
-        .app-nav {
-            position: relative; z-index: 2;
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0.8rem 1.5rem;
-            border-bottom: 1.5px solid var(--ink);
-            background: var(--bg);
-        }
-
-        .nav-logo {
-            font-family: 'Caveat', cursive;
-            font-size: 1.6rem; font-weight: 700; letter-spacing: -0.5px;
-        }
-
-        .nav-logo .holo-text {
-            background: var(--holo-strong); background-size: 300% 100%;
-            -webkit-background-clip: text; background-clip: text; color: transparent;
-            animation: holoShift 6s linear infinite;
-        }
-
-        @keyframes holoShift {
-            from { background-position: 0 0; }
-            to   { background-position: 300% 0; }
-        }
-
-        .nav-tabs { display: flex; gap: 4px; }
-
-        .nav-tab {
-            padding: 0.4rem 1.1rem;
-            border: 1.5px solid var(--ink); border-radius: 99px;
-            background: none; color: var(--ink-soft);
-            font-size: 0.82rem; font-weight: 600; cursor: pointer;
-            transition: all 0.15s; letter-spacing: 0.02em;
-        }
-        .nav-tab:hover { background: rgba(36,31,26,.06); }
-        .nav-tab.active { background: var(--ink); color: var(--bg); }
-
-        .week-badge {
-            font-size: 0.75rem; color: var(--muted);
-            display: flex; align-items: center; gap: 0.4rem;
-        }
-        .week-dot {
-            width: 6px; height: 6px; border-radius: 50%;
-            background: var(--pink); box-shadow: 0 0 6px var(--pink);
-        }
-
-        /* ── Views ── */
-        .view { display: none; position: relative; z-index: 1; }
-        .view.active { display: flex; flex-direction: column; align-items: center; }
-
-        /* ── Timer View ── */
-        #timerView { padding: 1.4rem 1.5rem 2rem; min-height: calc(100vh - 57px); }
-
-        /* Melody track */
-        .melody-track-wrap { width: 100%; max-width: 520px; margin-bottom: 1.2rem; }
-
-        .track-header {
-            display: flex; justify-content: space-between; align-items: baseline;
-            margin-bottom: 0.5rem;
-        }
-
-        .track-label {
-            font-size: 0.65rem; letter-spacing: 0.25em;
-            text-transform: uppercase; color: var(--muted); font-weight: 600;
-        }
-
-        .track-count { font-family: 'Caveat', cursive; font-size: 1rem; color: var(--ink-soft); }
-
-        .track-slots {
-            display: flex; gap: 5px;
-            background: var(--surface);
-            border: 1.5px solid var(--ink); border-radius: 12px;
-            padding: 10px 12px;
-            box-shadow: 3px 3px 0 var(--ink);
-        }
-
-        .slot {
-            flex: 1; height: 20px; border-radius: 6px;
-            border: 1.5px solid rgba(36,31,26,.15);
-            background: rgba(36,31,26,.04);
-            transition: all 0.3s; position: relative; overflow: hidden;
-        }
-
-        .slot.filled {
-            border-color: transparent;
-            background: var(--holo); background-size: 300% 100%;
-            animation: holoShift 4s linear infinite;
-        }
-
-        .slot.filled.new {
-            animation: holoShift 4s linear infinite, slotPop 0.5s cubic-bezier(0.34,1.56,0.64,1);
-        }
-
-        @keyframes slotPop {
-            from { transform: scaleY(0); opacity: 0; }
-            to   { transform: scaleY(1); opacity: 1; }
-        }
-
-        /* Timer */
-        .timer-wrapper {
-            position: relative; width: 210px; height: 210px; margin-bottom: 0.9rem;
-        }
-
-        .timer-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-        .timer-track { fill: none; stroke: rgba(36,31,26,.1); stroke-width: 10; }
-        .timer-progress {
-            fill: none; stroke: url(#timerGrad); stroke-width: 10;
-            stroke-linecap: round; stroke-dasharray: 706.86; stroke-dashoffset: 0;
-        }
-        .timer-glow {
-            fill: none; stroke: url(#timerGrad); stroke-width: 20;
-            stroke-linecap: round; stroke-dasharray: 706.86; stroke-dashoffset: 0;
-            opacity: 0.12; filter: blur(5px);
-        }
-
-        .timer-center {
-            position: absolute; inset: 0;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-        }
-
-        .timer-display {
-            font-size: 2.8rem; font-weight: 700; letter-spacing: -3px;
-            font-variant-numeric: tabular-nums; color: var(--ink); line-height: 1;
-        }
-
-        .timer-status {
-            font-size: 0.65rem; letter-spacing: 0.25em;
-            text-transform: uppercase; color: var(--muted); margin-top: 4px;
-        }
-
-        /* Duration */
-        .duration-row { display: flex; gap: 6px; margin-bottom: 0.9rem; }
-
-        .dur-btn {
-            padding: 0.3rem 0.85rem; border-radius: 99px;
-            border: 1.5px solid var(--ink); background: var(--surface);
-            color: var(--ink-soft); font-size: 0.8rem; font-weight: 600;
-            cursor: pointer; transition: all 0.15s;
-            box-shadow: 2px 2px 0 var(--ink);
-        }
-        .dur-btn:hover { transform: translate(-1px,-1px); box-shadow: 3px 3px 0 var(--ink); }
-        .dur-btn:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 var(--ink); }
-        .dur-btn.active { background: var(--pink); color: #fff; border-color: var(--ink); }
-        .dur-btn:disabled { opacity: 0.4; pointer-events: none; }
-
-        /* Controls */
-        .controls { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 1.2rem; flex-wrap: wrap; justify-content: center; }
-
-        .btn-start {
-            width: 66px; height: 66px; border-radius: 50%;
-            border: 2px solid var(--ink); background: var(--pink); color: #fff;
-            font-size: 1.4rem; cursor: pointer;
-            box-shadow: 4px 4px 0 var(--ink); transition: all 0.12s;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .btn-start:hover  { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--ink); }
-        .btn-start:active { transform: translate(2px, 2px);  box-shadow: 2px 2px 0 var(--ink); }
-        .btn-start.running { background: var(--mint); }
-
-        .btn-outline {
-            padding: 0.45rem 1.1rem; border-radius: 99px;
-            border: 1.5px solid var(--ink); background: var(--surface);
-            color: var(--ink-soft); font-size: 0.82rem; font-weight: 600;
-            cursor: pointer; box-shadow: 2px 2px 0 var(--ink); transition: all 0.12s;
-        }
-        .btn-outline:hover  { transform: translate(-1px,-1px); box-shadow: 3px 3px 0 var(--ink); }
-        .btn-outline:active { transform: translate(1px, 1px);  box-shadow: 1px 1px 0 var(--ink); }
-        .btn-outline.stop { background: #fff3f7; border-color: var(--pink); color: var(--pink); display: none; }
-
-        /* Force end (abandon) button */
-        .btn-abandon {
-            display: none;
-            padding: 0.45rem 1.1rem; border-radius: 99px;
-            border: 1.5px solid var(--red); background: #fff5f5;
-            color: var(--red); font-size: 0.82rem; font-weight: 600;
-            cursor: pointer; box-shadow: 2px 2px 0 var(--red); transition: all 0.12s;
-        }
-        .btn-abandon:hover  { transform: translate(-1px,-1px); box-shadow: 3px 3px 0 var(--red); }
-        .btn-abandon:active { transform: translate(1px, 1px);  box-shadow: 1px 1px 0 var(--red); }
-
-        /* Notes section */
-        .notes-section { width: 100%; max-width: 520px; }
-
-        .notes-section-header {
-            display: flex; justify-content: space-between;
-            align-items: center; margin-bottom: 0.5rem;
-        }
-
-        .notes-grid {
-            display: flex; flex-wrap: wrap; gap: 6px;
-            padding: 1rem; background: var(--surface);
-            border: 1.5px solid var(--ink); border-radius: 16px;
-            min-height: 72px; align-items: center;
-            box-shadow: 3px 3px 0 var(--ink);
-        }
-
-        .empty-hint {
-            width: 100%; text-align: center;
-            font-family: 'Caveat', cursive; font-size: 1rem; color: var(--muted);
-        }
-
-        .note-chip {
-            width: 40px; height: 40px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.2rem; border: 1.5px solid var(--ink);
-            animation: chipIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
-            cursor: default; transition: transform 0.15s;
-            box-shadow: 2px 2px 0 var(--ink);
-        }
-        .note-chip:hover { transform: scale(1.18) rotate(5deg); }
-        .note-chip.lit { animation: chipLit 0.4s cubic-bezier(0.34,1.56,0.64,1); }
-
-        @keyframes chipIn {
-            from { transform: scale(0) rotate(-30deg); opacity: 0; }
-            to   { transform: scale(1) rotate(0deg);   opacity: 1; }
-        }
-        @keyframes chipLit {
-            0%   { transform: scale(1); filter: brightness(1); }
-            45%  { transform: scale(1.5); filter: brightness(1.3) saturate(1.5); }
-            100% { transform: scale(1); filter: none; }
-        }
-
-        .btn-play-melody {
-            margin-top: 0.6rem; width: 100%; padding: 0.6rem;
-            border-radius: 10px; border: 1.5px dashed rgba(36,31,26,.25);
-            background: none; color: var(--muted); font-size: 0.85rem;
-            cursor: pointer; transition: all 0.2s;
-        }
-        .btn-play-melody:hover { border-color: var(--pink); color: var(--pink); background: rgba(255,126,176,.05); }
-        .btn-play-melody:disabled { opacity: 0.35; pointer-events: none; }
-
-        .banner {
-            display: none; margin-top: 0.7rem; padding: 0.9rem 1rem;
-            text-align: center; background: var(--holo); background-size: 300%;
-            animation: holoShift 6s linear infinite;
-            border: 1.5px solid var(--ink); border-radius: 12px;
-            box-shadow: 3px 3px 0 var(--ink);
-            font-family: 'Caveat', cursive; font-size: 1.1rem; font-weight: 700;
-        }
-        .banner.show { display: block; }
-
-        /* ── Session Complete Overlay ── */
-        #sessionComplete {
-            position: fixed; inset: 0; z-index: 100;
-            background: rgba(20,15,10,.92);
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            padding: 2rem;
-            opacity: 0; pointer-events: none; transition: opacity 0.4s;
-        }
-        #sessionComplete.show { opacity: 1; pointer-events: auto; }
-
-        .confetti-piece {
-            position: absolute; pointer-events: none; font-size: 1.4rem;
-            animation: confettiFall linear forwards;
-        }
-        @keyframes confettiFall {
-            0%   { transform: translate(0, -20px) rotate(0deg) scale(1); opacity: 1; }
-            100% { transform: translate(var(--dx), 100vh) rotate(720deg) scale(0.5); opacity: 0; }
-        }
-
-        .holo-disk {
-            width: 160px; height: 160px; border-radius: 50%;
-            background: var(--holo-strong); background-size: 300% 100%;
-            border: 3px solid var(--ink);
-            box-shadow: 0 0 40px rgba(255,126,176,.4), 6px 6px 0 var(--ink);
-            display: flex; align-items: center; justify-content: center;
-            margin-bottom: 1.5rem;
-            animation: holoShift 3s linear infinite, diskIn 0.6s cubic-bezier(0.34,1.56,0.64,1);
-            cursor: pointer;
-        }
-        @keyframes diskIn {
-            from { transform: scale(0) rotate(-180deg); opacity: 0; }
-            to   { transform: scale(1) rotate(0deg); opacity: 1; }
-        }
-
-        .holo-disk-inner {
-            width: 100px; height: 100px; border-radius: 50%;
-            background: #fff; border: 2px solid var(--ink);
-            display: flex; align-items: center; justify-content: center; font-size: 3rem;
-            transition: transform 0.2s;
-        }
-        .holo-disk:hover .holo-disk-inner { transform: scale(1.1); }
-
-        .complete-title {
-            font-family: 'Caveat', cursive; font-size: 2.2rem; font-weight: 700;
-            color: #fff; text-align: center; margin-bottom: 0.3rem;
-        }
-        .complete-sub {
-            font-size: 0.85rem; color: rgba(255,255,255,.55);
-            letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 0.6rem;
-        }
-        .complete-hint {
-            font-size: 0.75rem; color: rgba(255,255,255,.35);
-            margin-bottom: 1.5rem;
-        }
-
-        .complete-track {
-            display: flex; gap: 4px; margin-bottom: 2rem;
-            padding: 8px 12px; background: rgba(255,255,255,.08);
-            border-radius: 10px; border: 1px solid rgba(255,255,255,.12);
-        }
-        .complete-slot {
-            width: 18px; height: 18px; border-radius: 5px;
-            background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.15);
-        }
-        .complete-slot.filled {
-            background: var(--holo); background-size: 300%;
-            animation: holoShift 4s linear infinite; border-color: transparent;
-        }
-        .complete-slot.new-one {
-            background: var(--holo-strong); background-size: 300%;
-            animation: holoShift 2s linear infinite, slotNewPulse 1s ease-in-out infinite;
-            border-color: transparent;
-        }
-        @keyframes slotNewPulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(255,126,176,.6); }
-            50% { box-shadow: 0 0 0 5px rgba(255,126,176,0); }
-        }
-
-        .complete-btns { display: flex; gap: 0.75rem; }
-
-        .btn-complete-primary {
-            padding: 0.75rem 1.8rem; border-radius: 99px;
-            border: 2px solid var(--ink); background: var(--pink); color: #fff;
-            font-size: 0.95rem; font-weight: 700; cursor: pointer;
-            box-shadow: 4px 4px 0 rgba(255,255,255,.2); transition: all 0.12s;
-        }
-        .btn-complete-primary:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 rgba(255,255,255,.2); }
-        .btn-complete-primary:active { transform: translate(2px,2px); box-shadow: 2px 2px 0 rgba(255,255,255,.2); }
-
-        .btn-complete-secondary {
-            padding: 0.75rem 1.4rem; border-radius: 99px;
-            border: 1.5px solid rgba(255,255,255,.25); background: rgba(255,255,255,.1);
-            color: rgba(255,255,255,.8); font-size: 0.9rem; cursor: pointer; transition: all 0.15s;
-        }
-        .btn-complete-secondary:hover { background: rgba(255,255,255,.18); border-color: rgba(255,255,255,.4); }
-
-        /* ── Collection View ── */
-        #collectionView { padding: 1.5rem; min-height: calc(100vh - 57px); }
-
-        .collection-title {
-            font-family: 'Caveat', cursive; font-size: 1.8rem; font-weight: 700;
-            margin-bottom: 0.3rem; align-self: flex-start; max-width: 560px; width: 100%;
-        }
-        .collection-sub {
-            font-size: 0.8rem; color: var(--muted); margin-bottom: 1.5rem;
-            align-self: flex-start; max-width: 560px; width: 100%;
-        }
-
-        .cassette-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 1rem; width: 100%; max-width: 560px;
-        }
-
-        .cassette {
-            background: var(--surface); border: 1.5px solid var(--ink);
-            border-radius: 12px; padding: 14px;
-            box-shadow: 4px 4px 0 var(--ink); cursor: pointer; transition: all 0.12s;
-        }
-        .cassette:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--ink); }
-        .cassette:active { transform: translate(2px,2px); box-shadow: 2px 2px 0 var(--ink); }
-        .cassette.in-progress { border-style: dashed; box-shadow: 4px 4px 0 var(--muted); }
-
-        .cassette-window {
-            border: 1px solid rgba(36,31,26,.15); border-radius: 6px;
-            height: 52px; display: flex; align-items: center;
-            justify-content: space-around; padding: 0 10px; margin-bottom: 8px;
-        }
-        .reel {
-            width: 28px; height: 28px; border-radius: 50%;
-            border: 2px solid var(--ink); position: relative;
-            display: flex; align-items: center; justify-content: center;
-        }
-        .reel::after {
-            content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--ink);
-        }
-        .cassette.playing .reel { animation: reelSpin 2s linear infinite; }
-        @keyframes reelSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-        .cassette-tape-line { height: 2px; width: 30px; background: var(--ink); opacity: 0.3; }
-
-        .cassette-dots { display: flex; gap: 3px; margin-bottom: 8px; }
-        .cassette-dot {
-            flex: 1; height: 5px; border-radius: 3px;
-            background: rgba(36,31,26,.08); border: 1px solid rgba(36,31,26,.1);
-        }
-        .cassette-dot.filled {
-            background: var(--holo); background-size: 300%;
-            animation: holoShift 4s linear infinite; border-color: transparent;
-        }
-
-        .cassette-label {
-            font-family: 'Caveat', cursive; font-size: 0.95rem; font-weight: 600;
-            color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-        }
-        .cassette-melody-name {
-            font-size: 0.65rem; color: var(--muted); margin-top: 1px; letter-spacing: 0.05em;
-        }
-        .cassette-week { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
-
-        .cassette-play-btn {
-            display: flex; align-items: center; gap: 4px; margin-top: 8px;
-            padding: 0.3rem 0.6rem; border-radius: 99px;
-            border: 1px solid var(--ink); background: none; font-size: 0.75rem;
-            cursor: pointer; transition: all 0.15s; width: 100%; justify-content: center;
-        }
-        .cassette-play-btn:hover { background: var(--pink); color: #fff; border-color: var(--pink); }
-        .cassette.in-progress .cassette-play-btn { display: none; }
-
-        .empty-collection {
-            text-align: center; padding: 3rem 1rem;
-            color: var(--muted); font-family: 'Caveat', cursive; font-size: 1.2rem;
-        }
-
-        /* ── Settings View ── */
-        #settingsView { padding: 1.5rem; min-height: calc(100vh - 57px); }
-
-        .settings-title {
-            font-family: 'Caveat', cursive; font-size: 1.8rem; font-weight: 700;
-            margin-bottom: 1.5rem; align-self: flex-start; max-width: 560px; width: 100%;
-        }
-
-        .settings-section {
-            width: 100%; max-width: 560px; margin-bottom: 2rem;
-        }
-
-        .settings-section-label {
-            font-size: 0.65rem; letter-spacing: 0.25em; text-transform: uppercase;
-            color: var(--muted); font-weight: 600; margin-bottom: 0.7rem; display: block;
-        }
-
-        .melody-cards {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.75rem;
-        }
-
-        .melody-card {
-            background: var(--surface); border: 1.5px solid var(--ink);
-            border-radius: 12px; padding: 14px 14px 12px;
-            box-shadow: 3px 3px 0 var(--ink); cursor: pointer; transition: all 0.12s;
-            position: relative;
-        }
-        .melody-card:hover { transform: translate(-1px,-1px); box-shadow: 4px 4px 0 var(--ink); }
-        .melody-card:active { transform: translate(1px,1px); box-shadow: 1px 1px 0 var(--ink); }
-
-        .melody-card.active {
-            background: var(--holo); background-size: 300% 100%;
-            animation: holoShift 5s linear infinite;
-            box-shadow: 4px 4px 0 var(--ink);
-        }
-
-        .melody-card-emoji { font-size: 1.8rem; margin-bottom: 6px; display: block; }
-        .melody-card-name {
-            font-family: 'Caveat', cursive; font-size: 1.05rem; font-weight: 700;
-            color: var(--ink); display: block; margin-bottom: 2px;
-        }
-        .melody-card-desc { font-size: 0.72rem; color: var(--ink-soft); }
-
-        .melody-card-check {
-            position: absolute; top: 8px; right: 10px;
-            width: 18px; height: 18px; border-radius: 50%;
-            background: var(--ink); color: #fff;
-            display: none; align-items: center; justify-content: center;
-            font-size: 0.65rem; font-weight: 700;
-        }
-        .melody-card.active .melody-card-check { display: flex; }
-
-        .melody-preview-btn {
-            display: flex; align-items: center; gap: 4px; margin-top: 8px;
-            padding: 0.25rem 0.6rem; border-radius: 99px;
-            border: 1px solid rgba(36,31,26,.25); background: none; font-size: 0.72rem;
-            cursor: pointer; transition: all 0.15s; color: var(--ink-soft);
-        }
-        .melody-preview-btn:hover { border-color: var(--pink); color: var(--pink); }
-
-        /* Sound toggle row */
-        .setting-row {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0.9rem 1rem;
-            background: var(--surface); border: 1.5px solid var(--ink);
-            border-radius: 12px; box-shadow: 3px 3px 0 var(--ink);
-        }
-
-        .setting-row-label { font-size: 0.9rem; font-weight: 600; color: var(--ink); }
-        .setting-row-desc { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
-
-        .toggle-switch {
-            width: 46px; height: 26px; border-radius: 99px;
-            border: 2px solid var(--ink); background: rgba(36,31,26,.1);
-            position: relative; cursor: pointer; transition: background 0.2s;
-            flex-shrink: 0;
-        }
-        .toggle-switch.on { background: var(--mint); }
-        .toggle-switch::after {
-            content: ''; position: absolute;
-            left: 2px; top: 2px;
-            width: 18px; height: 18px; border-radius: 50%;
-            background: #fff; border: 1.5px solid var(--ink);
-            transition: transform 0.2s;
-        }
-        .toggle-switch.on::after { transform: translateX(20px); }
-
-        .settings-stats {
-            padding: 1rem; background: var(--surface);
-            border: 1.5px solid var(--ink); border-radius: 12px;
-            box-shadow: 3px 3px 0 var(--ink);
-            display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
-        }
-
-        .stat-item { text-align: center; }
-        .stat-num {
-            font-family: 'Caveat', cursive; font-size: 2rem; font-weight: 700;
-            color: var(--pink); display: block;
-        }
-        .stat-label { font-size: 0.72rem; color: var(--muted); }
-
-        /* ── Flash ── */
-        #flash {
-            position: fixed; inset: 0; pointer-events: none; opacity: 0;
-            background: radial-gradient(circle at center, rgba(255,126,176,.25) 0%, transparent 65%);
-            transition: opacity 0.3s; z-index: 50;
-        }
-        #flash.on { opacity: 1; }
-
-        /* ── Toast ── */
-        #toast {
-            position: fixed; bottom: 2rem; left: 50%;
-            transform: translateX(-50%) translateY(80px);
-            background: var(--ink); color: #fff;
-            padding: 0.65rem 1.4rem; border-radius: 99px;
-            font-size: 0.85rem; z-index: 200; white-space: nowrap;
-            opacity: 0; transition: transform 0.3s, opacity 0.3s;
-            box-shadow: 3px 3px 0 rgba(0,0,0,.2);
-            pointer-events: none;
-        }
-        #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-
-        /* ── Floating note ── */
-        .fnote {
-            position: fixed; pointer-events: none; z-index: 60;
-            font-size: 2rem;
-            animation: floatNote 1.4s cubic-bezier(0.34,1.56,0.64,1) forwards;
-        }
-        @keyframes floatNote {
-            0%   { transform: translate(0,0) scale(0.4) rotate(0deg); opacity: 1; }
-            60%  { transform: translate(-20px,-140px) scale(1.3) rotate(-15deg); opacity: 1; }
-            100% { transform: translate(10px,-200px) scale(0.8) rotate(10deg); opacity: 0; }
-        }
-
-        /* ── Keyboard shortcut hint ── */
-        .shortcut-hint {
-            font-size: 0.68rem; color: var(--muted); margin-top: 0.4rem; text-align: center;
-        }
-        .key-badge {
-            display: inline-block; padding: 1px 6px;
-            border: 1px solid var(--muted); border-radius: 4px;
-            font-size: 0.66rem; font-family: monospace; margin: 0 2px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Focus Melody</title>
+<script>
+  tailwind.config = {
+    theme: { extend: {
+      fontFamily: { caveat: ['Caveat','cursive'], lcd: ['"Major Mono Display"','monospace'] }
+    }}
+  }
+</script>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Major+Mono+Display&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet">
+<style>
+:root {
+  --holo: linear-gradient(120deg,#ffd1f0 0%,#c9e8ff 25%,#d6ffd9 45%,#fff4c2 65%,#ffc6ec 85%,#a8d4ff 100%);
+  --holo-strong: linear-gradient(120deg,#ff7eb0 0%,#7fc8ff 22%,#7fe3c8 44%,#fff08a 66%,#c9b3ff 88%,#ff7eb0 100%);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#faf5e8;min-height:100vh;font-family:-apple-system,'Segoe UI',sans-serif;color:#241f1a}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;opacity:.18;background-image:radial-gradient(rgba(36,31,26,.2) 1px,transparent 1px);background-size:22px 22px;mix-blend-mode:multiply;z-index:0}
+.material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;vertical-align:middle;line-height:1}
+@keyframes holoShift{from{background-position:0 0}to{background-position:300% 0}}
+@keyframes vinylSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes diskIn{from{transform:scale(0) rotate(-180deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+@keyframes chipIn{from{transform:scale(0) rotate(-30deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+@keyframes confettiFall{0%{transform:translate(0,-20px) rotate(0deg) scale(1);opacity:1}100%{transform:translate(var(--dx),100vh) rotate(720deg) scale(.5);opacity:0}}
+@keyframes floatNote{0%{transform:translate(0,0) scale(.4) rotate(0deg);opacity:1}60%{transform:translate(-20px,-140px) scale(1.3) rotate(-15deg);opacity:1}100%{transform:translate(10px,-200px) scale(.8) rotate(10deg);opacity:0}}
+@keyframes slotPulse{0%,100%{box-shadow:0 0 0 0 rgba(255,126,176,.6)}50%{box-shadow:0 0 0 5px rgba(255,126,176,0)}}
+.holo-text{background:var(--holo-strong);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:holoShift 6s linear infinite}
+.view{display:none;flex-direction:column}
+.view.active{display:flex}
+
+/* Piano keys */
+.piano-key{flex:1;min-width:0;min-height:90px;border-right:1.5px solid #241f1a;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-bottom:8px;transition:all .12s;user-select:none}
+.piano-key:last-child{border-right:none}
+.piano-key.unlocked{background:var(--holo);background-size:300% 100%;animation:holoShift 5s linear infinite;cursor:pointer;box-shadow:inset 0 -3px 0 rgba(36,31,26,.15)}
+.piano-key.unlocked:hover{filter:brightness(1.12);transform:scaleY(1.06);transform-origin:bottom}
+.piano-key.unlocked:active{filter:brightness(.9);transform:scaleY(.97);transform-origin:bottom}
+.piano-key.unlocked.lit{filter:brightness(1.7) saturate(1.5)!important;transition:filter 0s!important}
+.piano-key.locked{background:#f0ebe0;cursor:not-allowed}
+
+/* Melody dots */
+.mdot{width:14px;height:14px;border-radius:50%;border:1.5px solid rgba(36,31,26,.2);background:rgba(36,31,26,.06);flex-shrink:0;transition:all .3s}
+.mdot.filled{background:var(--holo);background-size:300% 100%;animation:holoShift 4s linear infinite;border-color:transparent}
+.mdot.new-dot{background:var(--holo-strong);background-size:300% 100%;animation:holoShift 2s linear infinite,slotPulse 1s ease-in-out infinite;border-color:transparent}
+
+/* Holo disk (session complete) */
+.holo-disk{width:160px;height:160px;border-radius:50%;background:var(--holo-strong);background-size:300% 100%;border:3px solid #241f1a;box-shadow:0 0 40px rgba(255,126,176,.4),6px 6px 0 #241f1a;display:flex;align-items:center;justify-content:center;margin-bottom:1.5rem;animation:holoShift 3s linear infinite,diskIn .6s cubic-bezier(.34,1.56,.64,1);cursor:pointer}
+.holo-disk-inner{width:100px;height:100px;border-radius:50%;background:#fff;border:2px solid #241f1a;display:flex;align-items:center;justify-content:center;font-size:3rem;transition:transform .2s}
+.holo-disk:hover .holo-disk-inner{transform:scale(1.1)}
+
+/* Complete slots */
+.c-slot{width:14px;height:14px;border-radius:4px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15)}
+.c-slot.filled{background:var(--holo);background-size:300%;animation:holoShift 4s linear infinite;border-color:transparent}
+.c-slot.new-one{background:var(--holo-strong);background-size:300%;animation:holoShift 2s linear infinite,slotPulse 1s ease-in-out infinite;border-color:transparent}
+
+/* Toast */
+#toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(80px);background:#241f1a;color:#fff;padding:.65rem 1.4rem;border-radius:99px;font-size:.85rem;z-index:200;white-space:nowrap;opacity:0;transition:transform .3s,opacity .3s;box-shadow:3px 3px 0 rgba(0,0,0,.2);pointer-events:none}
+#toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+#flash{position:fixed;inset:0;pointer-events:none;opacity:0;background:radial-gradient(circle at center,rgba(255,126,176,.3) 0%,transparent 65%);transition:opacity .3s;z-index:50}
+#flash.on{opacity:1}
+
+/* Session complete overlay */
+#sessionComplete{position:fixed;inset:0;z-index:100;background:rgba(20,15,10,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;opacity:0;pointer-events:none;transition:opacity .4s}
+#sessionComplete.show{opacity:1;pointer-events:auto}
+.confetti-piece{position:absolute;pointer-events:none;font-size:1.4rem;animation:confettiFall linear forwards}
+.fnote{position:fixed;pointer-events:none;z-index:60;font-size:2rem;animation:floatNote 1.4s cubic-bezier(.34,1.56,.64,1) forwards}
+
+/* Time setup modal */
+#timeSetModal{position:fixed;inset:0;z-index:90;background:rgba(20,15,10,.7);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
+#timeSetModal.show{opacity:1;pointer-events:auto}
+@keyframes blink{from,to{opacity:1}50%{opacity:0}}
+
+/* Fader */
+.fader-wrap{width:4px;position:relative;background:rgba(36,31,26,.25);border-radius:2px;cursor:pointer}
+.fader-fill{position:absolute;bottom:0;left:0;width:100%;border-radius:2px;background:var(--holo-strong);background-size:300%;animation:holoShift 4s linear infinite}
+.fader-thumb{position:absolute;left:50%;transform:translateX(-50%);width:44px;height:20px;background:var(--holo);background-size:300%;animation:holoShift 4s linear infinite;border:1.5px solid #241f1a;border-radius:4px;box-shadow:2px 2px 0 #241f1a;cursor:grab;touch-action:none}
+.fader-thumb:active{cursor:grabbing}
+
+/* Sound toggle */
+.toggle-sw{width:46px;height:26px;border-radius:99px;border:2px solid #241f1a;background:rgba(36,31,26,.1);position:relative;cursor:pointer;transition:background .2s;flex-shrink:0}
+.toggle-sw.on{background:#7fe3c8}
+.toggle-sw::after{content:'';position:absolute;left:2px;top:2px;width:18px;height:18px;border-radius:50%;background:#fff;border:1.5px solid #241f1a;transition:transform .2s}
+.toggle-sw.on::after{transform:translateX(20px)}
+
+/* Nav tabs */
+.nav-tab{padding:.4rem 1.1rem;border:1.5px solid #241f1a;border-radius:99px;background:none;color:#5a4f44;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .15s}
+.nav-tab:hover{background:rgba(36,31,26,.06)}
+.nav-tab.active{background:#241f1a;color:#faf5e8}
+
+/* Vinyl record */
+.vinyl-record{border-radius:50%;background:#1a1a1a;border:2px solid #241f1a;position:relative;overflow:hidden;flex-shrink:0}
+.vinyl-spinning{animation:vinylSpin 3s linear infinite}
+
+/* Melody card settings */
+.mel-card{background:#fff;border:1.5px solid #241f1a;border-radius:12px;padding:14px;box-shadow:3px 3px 0 #241f1a;cursor:pointer;transition:all .12s;position:relative;display:flex;align-items:center;gap:12px}
+.mel-card:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 #241f1a}
+.mel-card.active{background:var(--holo);background-size:300% 100%;animation:holoShift 5s linear infinite}
+
+/* Transport buttons */
+.btn-icon{display:flex;align-items:center;justify-content:center;width:42px;height:42px;border-radius:10px;border:1.5px solid #241f1a;background:#fff;cursor:pointer;box-shadow:2px 2px 0 #241f1a;transition:all .12s;flex-shrink:0}
+.btn-icon:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 #241f1a}
+.btn-icon:active{transform:translate(1px,1px);box-shadow:1px 1px 0 #241f1a}
+.btn-start-main{display:flex;align-items:center;justify-content:center;gap:6px;padding:.6rem 1.4rem;border-radius:10px;border:2px solid #241f1a;background:#ff7eb0;color:#fff;font-size:.95rem;font-weight:700;cursor:pointer;box-shadow:3px 3px 0 #241f1a;transition:all .12s;flex:1}
+.btn-start-main:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 #241f1a}
+.btn-start-main:active{transform:translate(1px,1px);box-shadow:1px 1px 0 #241f1a}
+.btn-start-main.running{background:#7fe3c8;color:#241f1a}
+.btn-abandon{display:none;align-items:center;gap:6px;padding:.5rem 1rem;border-radius:8px;border:1.5px solid #ff5a5a;background:#fff5f5;color:#ff5a5a;font-size:.82rem;font-weight:600;cursor:pointer;box-shadow:2px 2px 0 #ff5a5a;transition:all .12s;flex-shrink:0}
+.btn-abandon:hover{transform:translate(-1px,-1px);box-shadow:3px 3px 0 #ff5a5a}
+.btn-stop-melody{display:none;align-items:center;gap:4px;padding:.5rem 1rem;border-radius:8px;border:1.5px solid #7fe3c8;background:#f0fff8;color:#241f1a;font-size:.82rem;font-weight:600;cursor:pointer;box-shadow:2px 2px 0 rgba(127,227,200,.6);flex-shrink:0}
+</style>
 </head>
 <body>
-    <div id="flash"></div>
-    <div id="toast"></div>
 
-    <!-- Session Complete Overlay -->
-    <div id="sessionComplete">
-        <div class="holo-disk" id="holoDisk">
-            <div class="holo-disk-inner">
-                <span id="newNoteSymbol">♪</span>
-            </div>
+<!-- SVG gradient defs -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="holoGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffd1f0"/><stop offset="30%" stop-color="#c9e8ff"/>
+      <stop offset="55%" stop-color="#d6ffd9"/><stop offset="80%" stop-color="#fff4c2"/><stop offset="100%" stop-color="#ffd1f0"/>
+    </linearGradient>
+    <radialGradient id="chromeR" cx="35%" cy="30%" r="80%">
+      <stop offset="0%" stop-color="#ffffff"/><stop offset="45%" stop-color="#d4d8e1"/><stop offset="100%" stop-color="#6b7280"/>
+    </radialGradient>
+    <linearGradient id="chromeLin" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fdfdff"/><stop offset="24%" stop-color="#e5e7ed"/>
+      <stop offset="50%" stop-color="#b6bcc9"/><stop offset="70%" stop-color="#7d8696"/>
+      <stop offset="88%" stop-color="#c2c8d4"/><stop offset="100%" stop-color="#fafbff"/>
+    </linearGradient>
+  </defs>
+</svg>
+
+<div id="flash"></div>
+<div id="toast"></div>
+
+<!-- Session Complete Overlay -->
+<div id="sessionComplete">
+  <div class="holo-disk" id="holoDisk">
+    <div class="holo-disk-inner"><span id="newNoteSymbol">♪</span></div>
+  </div>
+  <div id="completeTitle" style="font-family:'Caveat',cursive;font-size:2.2rem;font-weight:700;color:#fff;text-align:center;margin-bottom:.3rem;"></div>
+  <div id="completeSub" style="font-size:.85rem;color:rgba(255,255,255,.55);letter-spacing:.2em;text-transform:uppercase;margin-bottom:.5rem;"></div>
+  <div style="font-size:.75rem;color:rgba(255,255,255,.35);margin-bottom:1.5rem;">디스크를 눌러서 이 음 들어보기</div>
+  <div id="completeTrack" style="display:flex;gap:4px;margin-bottom:2rem;padding:8px 14px;background:rgba(255,255,255,.08);border-radius:10px;border:1px solid rgba(255,255,255,.12);flex-wrap:wrap;max-width:340px;justify-content:center;"></div>
+  <div style="display:flex;gap:.75rem;">
+    <button id="closeCompleteBtn" style="padding:.75rem 1.4rem;border-radius:99px;border:1.5px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:rgba(255,255,255,.8);font-size:.9rem;cursor:pointer;">닫기</button>
+    <button id="nextSessionBtn" style="padding:.75rem 1.8rem;border-radius:99px;border:2px solid #241f1a;background:#ff7eb0;color:#fff;font-size:.95rem;font-weight:700;cursor:pointer;">다음 집중 →</button>
+  </div>
+</div>
+
+<!-- Time Setup Modal -->
+<div id="timeSetModal">
+  <div style="background:#faf5e8;border:2px solid #241f1a;border-radius:20px;padding:28px 32px;box-shadow:8px 8px 0 #241f1a;min-width:340px;max-width:90vw;position:relative;">
+    <button id="closeTimeSetBtn" style="position:absolute;top:14px;right:16px;background:none;border:none;cursor:pointer;font-size:1.3rem;color:#241f1a;line-height:1;">✕</button>
+    <div style="font-family:'Caveat',cursive;font-size:1.8rem;font-weight:700;margin-bottom:10px;">시간 설정</div>
+    <!-- LCD display -->
+    <div style="background:#241f1a;border-radius:8px;padding:12px 16px;margin-bottom:24px;display:flex;align-items:center;gap:6px;">
+      <span id="timeSetDisplay" style="font-family:'Major Mono Display',monospace;font-size:2rem;color:#7fe3c8;letter-spacing:-1px;">25:00</span>
+      <span style="font-family:'Major Mono Display',monospace;font-size:1.5rem;color:#ff7eb0;animation:blink 1s step-end infinite;">|</span>
+    </div>
+    <!-- Faders -->
+    <div style="display:flex;gap:40px;justify-content:center;align-items:flex-start;margin-bottom:24px;">
+      <!-- MIN fader -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+        <span style="font-family:'Major Mono Display',monospace;font-size:.7rem;color:#9a8d80;letter-spacing:.1em;">MIN</span>
+        <span id="minDisplay" style="font-family:'Caveat',cursive;font-size:1.4rem;font-weight:700;">25</span>
+        <div class="fader-wrap" id="minFaderWrap" style="height:140px;">
+          <div class="fader-fill" id="minFaderFill"></div>
+          <div class="fader-thumb" id="minFaderThumb"></div>
         </div>
-        <div class="complete-title" id="completeTitle">3번째 음 추가됐어요!</div>
-        <div class="complete-sub" id="completeSub">미 · 기쁨의 송가 · 3 / 14</div>
-        <div class="complete-hint">디스크를 눌러서 이 음 들어보기</div>
-        <div class="complete-track" id="completeTrack"></div>
-        <div class="complete-btns">
-            <button class="btn-complete-secondary" id="closeCompleteBtn">닫기</button>
-            <button class="btn-complete-primary" id="nextSessionBtn">다음 집중 시작 →</button>
+        <span style="font-size:.7rem;color:#9a8d80;">0 – 90</span>
+      </div>
+      <!-- SEC fader -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+        <span style="font-family:'Major Mono Display',monospace;font-size:.7rem;color:#9a8d80;letter-spacing:.1em;">SEC</span>
+        <span id="secDisplay" style="font-family:'Caveat',cursive;font-size:1.4rem;font-weight:700;">00</span>
+        <div class="fader-wrap" id="secFaderWrap" style="height:140px;">
+          <div class="fader-fill" id="secFaderFill"></div>
+          <div class="fader-thumb" id="secFaderThumb"></div>
         </div>
+        <span style="font-size:.7rem;color:#9a8d80;">0 · 15 · 30 · 45</span>
+      </div>
+    </div>
+    <button id="applyTimeBtn" style="width:100%;padding:.75rem;border-radius:12px;border:2px solid #241f1a;background:#ff7eb0;color:#fff;font-size:1rem;font-weight:700;cursor:pointer;box-shadow:3px 3px 0 #241f1a;">▶ 적용하기</button>
+  </div>
+</div>
+
+<!-- Nav -->
+<nav style="position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;padding:.8rem 1.5rem;border-bottom:2px solid #241f1a;background:#faf5e8;">
+  <div style="font-family:'Caveat',cursive;font-size:1.6rem;font-weight:700;letter-spacing:-.5px;">
+    focus <span class="holo-text">melody</span>
+  </div>
+  <div style="display:flex;gap:4px;" id="navTabs">
+    <button class="nav-tab active" data-view="timerView">타이머</button>
+    <button class="nav-tab" data-view="collectionView">컬렉션</button>
+    <button class="nav-tab" data-view="settingsView">설정</button>
+  </div>
+  <div style="font-size:.75rem;color:#9a8d80;display:flex;align-items:center;gap:.4rem;">
+    <span style="width:6px;height:6px;border-radius:50%;background:#ff7eb0;box-shadow:0 0 6px #ff7eb0;display:inline-block;"></span>
+    <span id="weekLabel">이번 주</span>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════
+     TIMER VIEW
+════════════════════════════════════════════════ -->
+<div class="view active" id="timerView" style="min-height:calc(100vh - 57px);position:relative;z-index:1;">
+  <div style="display:flex;align-items:flex-start;flex-wrap:wrap;gap:1.2rem;padding:1.2rem 1.5rem 1.5rem;max-width:920px;width:100%;margin:0 auto;flex:1;">
+
+    <!-- LEFT: Tuner Dial -->
+    <div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;">
+      <!-- Top label bar -->
+      <div style="background:#241f1a;border-radius:8px 8px 0 0;padding:5px 12px;width:250px;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-family:'Major Mono Display',monospace;font-size:9px;color:#7fe3c8;letter-spacing:.1em;">TX-10 · HOLO</span>
+        <span style="font-family:'Major Mono Display',monospace;font-size:9px;color:#ff7eb0;" id="recIndicator">● READY</span>
+      </div>
+      <!-- Tuner SVG -->
+      <svg id="tunerSvg" viewBox="0 0 250 250" style="width:250px;height:250px;filter:drop-shadow(3px 3px 0 #241f1a);">
+        <!-- Chrome outer ring -->
+        <circle cx="125" cy="125" r="121" fill="url(#chromeR)" stroke="#241f1a" stroke-width="1.8"/>
+        <circle cx="125" cy="125" r="116" fill="none" stroke="rgba(36,31,26,.3)" stroke-width=".8"/>
+        <!-- Inner face -->
+        <circle cx="125" cy="125" r="105" fill="#fbf6ea" stroke="#241f1a" stroke-width="1.4"/>
+        <!-- Holo progress wedge -->
+        <path id="tunerWedge" d="" fill="url(#holoGrad)" opacity=".8"/>
+        <!-- Tick marks 12 -->
+        <g stroke="#241f1a" stroke-width="1.4" stroke-linecap="round">
+          <line x1="125" y1="20" x2="125" y2="34"/>
+          <line x1="182" y1="36.5" x2="175" y2="48.1"/>
+          <line x1="218" y1="78" x2="206.4" y2="71"/>
+          <line x1="230" y1="125" x2="216" y2="125"/>
+          <line x1="218" y1="172" x2="206.4" y2="179"/>
+          <line x1="182" y1="213.5" x2="175" y2="201.9"/>
+          <line x1="125" y1="230" x2="125" y2="216"/>
+          <line x1="68" y1="213.5" x2="75" y2="201.9"/>
+          <line x1="32" y1="172" x2="43.6" y2="179"/>
+          <line x1="20" y1="125" x2="34" y2="125"/>
+          <line x1="32" y1="78" x2="43.6" y2="71"/>
+          <line x1="68" y1="36.5" x2="75" y2="48.1"/>
+        </g>
+        <!-- Center LCD circle -->
+        <circle cx="125" cy="125" r="60" fill="#241f1a"/>
+        <text id="tunerTime" x="125" y="122" text-anchor="middle" dominant-baseline="middle" style="font-family:'Major Mono Display',monospace;font-size:22px;fill:#7fe3c8;letter-spacing:-1px;">25:00</text>
+        <text id="tunerStatus" x="125" y="142" text-anchor="middle" style="font-family:'Major Mono Display',monospace;font-size:8px;fill:#ff7eb0;letter-spacing:.1em;">● READY</text>
+        <!-- Pointer -->
+        <g id="tunerPointer" style="transform-origin:125px 125px;">
+          <line x1="125" y1="125" x2="125" y2="70" stroke="#241f1a" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="125" cy="125" r="9" fill="#ff7eb0" stroke="#241f1a" stroke-width="1.5"/>
+        </g>
+      </svg>
+      <!-- Bottom label bar -->
+      <div style="background:#241f1a;border-radius:0 0 8px 8px;padding:5px 12px;width:250px;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-family:'Major Mono Display',monospace;font-size:9px;color:#c9b3ff;letter-spacing:.1em;">MELODY TIMER</span>
+        <span id="tunerMode" style="font-family:'Major Mono Display',monospace;font-size:9px;color:#fff08a;letter-spacing:.1em;">IDLE</span>
+      </div>
     </div>
 
-    <!-- Nav -->
-    <nav class="app-nav">
-        <div class="nav-logo">focus <span class="holo-text">melody</span></div>
-        <div class="nav-tabs">
-            <button class="nav-tab active" data-view="timerView">타이머</button>
-            <button class="nav-tab" data-view="collectionView">컬렉션</button>
-            <button class="nav-tab" data-view="settingsView">설정</button>
-        </div>
-        <div class="week-badge">
-            <span class="week-dot"></span>
-            <span id="weekLabel">이번 주</span>
-        </div>
-    </nav>
+    <!-- RIGHT: Synth Section -->
+    <div style="flex:1;min-width:280px;display:flex;flex-direction:column;gap:10px;">
 
-    <!-- Timer View -->
-    <div class="view active" id="timerView">
+      <!-- LCD Bar -->
+      <div style="background:#241f1a;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:14px;box-shadow:3px 3px 0 #241f1a;">
+        <span id="lcdTime" style="font-family:'Major Mono Display',monospace;font-size:2.4rem;color:#7fe3c8;letter-spacing:-2px;white-space:nowrap;line-height:1;">25:00</span>
+        <div style="flex:1;min-width:0;">
+          <div id="lcdMelody" style="font-family:'Major Mono Display',monospace;font-size:9px;color:#ff7eb0;letter-spacing:.1em;line-height:1.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">MELODY · 기쁨의 송가</div>
+          <div id="lcdUnlocked" style="font-family:'Major Mono Display',monospace;font-size:9px;color:#c9b3ff;letter-spacing:.1em;line-height:1.6;">UNLOCKED · 0 OF 14</div>
+        </div>
+        <span id="lcdFocus" style="font-family:'Major Mono Display',monospace;font-size:9px;color:#fff08a;letter-spacing:.1em;white-space:nowrap;">● READY</span>
+      </div>
 
-        <!-- Melody track -->
-        <div class="melody-track-wrap" style="margin-top:1.2rem;">
-            <div class="track-header">
-                <span class="track-label" id="trackTitle">이번 주 멜로디 트랙</span>
-                <span class="track-count" id="trackCount">0 / 14</span>
-            </div>
-            <div class="track-slots" id="trackSlots"></div>
-        </div>
+      <!-- Melody track dots -->
+      <div style="background:#fff;border:1.5px solid #241f1a;border-radius:10px;padding:10px 14px;box-shadow:2px 2px 0 #241f1a;">
+        <div style="font-family:'Major Mono Display',monospace;font-size:9px;color:#9a8d80;letter-spacing:.15em;margin-bottom:8px;">MELODY TRACK</div>
+        <div id="melodyDots" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+      </div>
 
-        <!-- Timer -->
-        <div class="timer-wrapper" id="timerWrap">
-            <svg class="timer-svg" viewBox="0 0 240 240">
-                <defs>
-                    <linearGradient id="timerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stop-color="#ff7eb0"/>
-                        <stop offset="50%" stop-color="#c9b3ff"/>
-                        <stop offset="100%" stop-color="#7fe3c8"/>
-                    </linearGradient>
-                </defs>
-                <circle class="timer-track" cx="120" cy="120" r="112.5"/>
-                <circle class="timer-glow" cx="120" cy="120" r="112.5"/>
-                <circle class="timer-progress" id="timerRing" cx="120" cy="120" r="112.5"/>
-            </svg>
-            <div class="timer-center">
-                <div class="timer-display" id="timerDisplay">25:00</div>
-                <div class="timer-status" id="timerStatus">준비</div>
-            </div>
-        </div>
+      <!-- Piano keys -->
+      <div style="background:#fff;border:1.5px solid #241f1a;border-radius:10px;overflow:hidden;box-shadow:3px 3px 0 #241f1a;">
+        <div style="font-family:'Major Mono Display',monospace;font-size:9px;color:#9a8d80;letter-spacing:.15em;padding:8px 12px 0;">PIANO KEYS · TAP TO PREVIEW</div>
+        <div id="pianoKeys" style="display:flex;border-top:1.5px solid #241f1a;margin-top:8px;height:100px;"></div>
+      </div>
 
-        <!-- Duration -->
-        <div class="duration-row">
-            <button class="dur-btn" data-min="15">15분</button>
-            <button class="dur-btn active" data-min="25">25분</button>
-            <button class="dur-btn" data-min="45">45분</button>
-            <button class="dur-btn" data-min="60">60분</button>
-        </div>
+      <!-- Transport controls -->
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <button class="btn-icon" id="resetBtn" title="리셋">
+          <span class="material-symbols-outlined" style="font-size:20px;">replay</span>
+        </button>
+        <button class="btn-start-main" id="startBtn">
+          <span class="material-symbols-outlined" id="startIcon" style="font-size:20px;">play_arrow</span>
+          <span id="startLabel">집중 시작</span>
+        </button>
+        <button class="btn-stop-melody" id="stopMelodyBtn">
+          <span class="material-symbols-outlined" style="font-size:18px;">stop</span>
+          멈추기
+        </button>
+        <button class="btn-abandon" id="abandonBtn">
+          <span class="material-symbols-outlined" style="font-size:18px;">cancel</span>
+          포기
+        </button>
+        <button class="btn-icon" id="timeSetBtn" title="시간 설정">
+          <span class="material-symbols-outlined" style="font-size:20px;">tune</span>
+        </button>
+      </div>
 
-        <!-- Controls -->
-        <div class="controls">
-            <button class="btn-outline" id="resetBtn">리셋</button>
-            <button class="btn-start" id="startBtn">▶</button>
-            <button class="btn-outline stop" id="stopMelodyBtn">■ 멈추기</button>
-            <button class="btn-abandon" id="abandonBtn">✕ 세션 포기</button>
-        </div>
-        <div class="shortcut-hint">
-            <span class="key-badge">Space</span> 시작 / 일시정지
-        </div>
+      <div style="font-size:.68rem;color:#9a8d80;text-align:center;">
+        <kbd style="display:inline-block;padding:1px 6px;border:1px solid #9a8d80;border-radius:4px;font-size:.66rem;font-family:monospace;">Space</kbd> 시작 / 일시정지
+      </div>
+    </div>
+  </div>
+</div>
 
-        <!-- Notes -->
-        <div class="notes-section" style="margin-top:1rem;">
-            <div class="notes-section-header">
-                <span class="track-label">쌓인 음표</span>
-            </div>
-            <div class="notes-grid" id="notesGrid">
-                <p class="empty-hint">집중 세션을 완료하면 음이 쌓여요 🎵</p>
-            </div>
-            <button class="btn-play-melody" id="playBtn" disabled>♪ 멜로디 듣기</button>
-            <div class="banner" id="banner">🎉 이번 주 멜로디 완성! 대단해요.</div>
-        </div>
+<!-- ═══════════════════════════════════════════════
+     COLLECTION VIEW
+════════════════════════════════════════════════ -->
+<div class="view" id="collectionView" style="min-height:calc(100vh - 57px);padding:1.5rem;align-items:center;position:relative;z-index:1;">
+  <div style="width:100%;max-width:700px;">
+    <div style="font-family:'Caveat',cursive;font-size:1.8rem;font-weight:700;margin-bottom:.3rem;">바이닐 쉘프</div>
+    <div style="font-size:.8rem;color:#9a8d80;margin-bottom:2rem;">완성한 멜로디마다 레코드 한 장. 클릭해서 다시 들어요.</div>
+
+    <div id="emptyCollection" style="text-align:center;padding:4rem;color:#9a8d80;font-family:'Caveat',cursive;font-size:1.2rem;display:none;">
+      집중 세션을 완료하면<br>레코드가 쌓여요 🎵
     </div>
 
-    <!-- Collection View -->
-    <div class="view" id="collectionView">
-        <div class="collection-title">내 카세트 보관함</div>
-        <div class="collection-sub">완성한 멜로디마다 카세트 하나. 클릭해서 다시 들을 수 있어요.</div>
-        <div class="cassette-grid" id="cassetteGrid"></div>
+    <!-- Vinyl carousel -->
+    <div id="vinylCarouselWrap" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:center;gap:16px;min-height:220px;margin-bottom:1.5rem;">
+        <button id="prevRecord" style="width:40px;height:40px;border-radius:50%;border:1.5px solid #241f1a;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:2px 2px 0 #241f1a;flex-shrink:0;transition:all .12s;">
+          <span class="material-symbols-outlined">chevron_left</span>
+        </button>
+        <div style="display:flex;align-items:center;justify-content:center;gap:20px;overflow:hidden;flex:1;">
+          <div id="prevVinylSlot" style="opacity:.35;transform:scale(.65);transition:all .35s;flex-shrink:0;"></div>
+          <div id="curVinylSlot" style="transition:all .35s;flex-shrink:0;"></div>
+          <div id="nextVinylSlot" style="opacity:.35;transform:scale(.65);transition:all .35s;flex-shrink:0;"></div>
+        </div>
+        <button id="nextRecord" style="width:40px;height:40px;border-radius:50%;border:1.5px solid #241f1a;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:2px 2px 0 #241f1a;flex-shrink:0;transition:all .12s;">
+          <span class="material-symbols-outlined">chevron_right</span>
+        </button>
+      </div>
+      <!-- Record info -->
+      <div id="vinylInfo" style="text-align:center;margin-bottom:1rem;"></div>
+      <!-- Playback controls -->
+      <div id="vinylPlayback" style="display:flex;justify-content:center;gap:10px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SETTINGS VIEW
+════════════════════════════════════════════════ -->
+<div class="view" id="settingsView" style="min-height:calc(100vh - 57px);padding:1.5rem;align-items:center;position:relative;z-index:1;">
+  <div style="width:100%;max-width:560px;">
+    <div style="font-family:'Caveat',cursive;font-size:1.8rem;font-weight:700;margin-bottom:1.5rem;">설정</div>
+
+    <div style="margin-bottom:2rem;">
+      <div style="font-size:.65rem;letter-spacing:.25em;text-transform:uppercase;color:#9a8d80;font-weight:600;margin-bottom:.7rem;">멜로디</div>
+      <div id="melodyCards" style="display:flex;flex-direction:column;gap:.6rem;"></div>
     </div>
 
-    <!-- Settings View -->
-    <div class="view" id="settingsView">
-        <div class="settings-title">설정</div>
-
-        <!-- Melody selection -->
-        <div class="settings-section">
-            <span class="settings-section-label">멜로디 선택</span>
-            <div class="melody-cards" id="melodyCards"></div>
+    <div style="margin-bottom:2rem;">
+      <div style="font-size:.65rem;letter-spacing:.25em;text-transform:uppercase;color:#9a8d80;font-weight:600;margin-bottom:.7rem;">소리</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:.9rem 1rem;background:#fff;border:1.5px solid #241f1a;border-radius:12px;box-shadow:3px 3px 0 #241f1a;">
+        <div>
+          <div style="font-size:.9rem;font-weight:600;">소리 켜기</div>
+          <div style="font-size:.75rem;color:#9a8d80;margin-top:2px;">멜로디 재생 및 효과음</div>
         </div>
-
-        <!-- Sound toggle -->
-        <div class="settings-section">
-            <span class="settings-section-label">소리</span>
-            <div class="setting-row">
-                <div>
-                    <div class="setting-row-label">소리 켜기</div>
-                    <div class="setting-row-desc">멜로디 재생 및 효과음</div>
-                </div>
-                <div class="toggle-switch on" id="soundToggle"></div>
-            </div>
-        </div>
-
-        <!-- Stats -->
-        <div class="settings-section">
-            <span class="settings-section-label">통계</span>
-            <div class="settings-stats">
-                <div class="stat-item">
-                    <span class="stat-num" id="statTotal">0</span>
-                    <span class="stat-label">총 완료 세션</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-num" id="statWeeks">0</span>
-                    <span class="stat-label">완성한 멜로디</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-num" id="statThis">0</span>
-                    <span class="stat-label">이번 주 음표</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-num" id="statStreak">0</span>
-                    <span class="stat-label">완성률 %</span>
-                </div>
-            </div>
-        </div>
+        <div class="toggle-sw on" id="soundToggle"></div>
+      </div>
     </div>
 
-    <script>
-        // ── Melody Definitions ───────────────────────────────────────
-        const MELODIES = [
-            {
-                id: 'ode',
-                name: '기쁨의 송가',
-                emoji: '🎵',
-                desc: 'Ode to Joy · 14♪',
-                total: 14,
-                freqs: [329.63, 329.63, 349.23, 392, 392, 349.23, 329.63, 293.66,
-                        261.63, 261.63, 293.66, 329.63, 329.63, 293.66],
-                noteNames: ['미','미','파','솔','솔','파','미','레','도','도','레','미','미','레'],
-            },
-            {
-                id: 'birthday',
-                name: '생일 축하해',
-                emoji: '🎂',
-                desc: 'Happy Birthday · 12♪',
-                total: 12,
-                freqs: [261.63, 261.63, 293.66, 261.63, 349.23, 329.63,
-                        261.63, 261.63, 293.66, 261.63, 392, 349.23],
-                noteNames: ['도','도','레','도','파','미','도','도','레','도','솔','파'],
-            },
-            {
-                id: 'twinkle',
-                name: '반짝반짝',
-                emoji: '⭐',
-                desc: 'Twinkle Twinkle · 14♪',
-                total: 14,
-                freqs: [261.63, 261.63, 392, 392, 440, 440, 392,
-                        349.23, 349.23, 329.63, 329.63, 293.66, 293.66, 261.63],
-                noteNames: ['도','도','솔','솔','라','라','솔','파','파','미','미','레','레','도'],
-            },
-        ];
-
-        // ── Constants ────────────────────────────────────────────────
-        const CIRCUMFERENCE = 2 * Math.PI * 112.5;
-        const NOTE_STEP = 0.58;
-        const NOTE_DUR  = 0.55;
-        const NOTE_SYMBOLS = ['♩','♪','♫','♬'];
-        const PALETTES = [
-            ['#ff7eb0','rgba(255,126,176,.14)'],
-            ['#7fe3c8','rgba(127,227,200,.14)'],
-            ['#c9b3ff','rgba(201,179,255,.14)'],
-            ['#ffc585','rgba(255,197,133,.14)'],
-            ['#7fc8ff','rgba(127,200,255,.14)'],
-            ['#ff9f7f','rgba(255,159,127,.14)'],
-            ['#a8e85a','rgba(168,232,90,.14)'],
-        ];
-
-        // ── State ────────────────────────────────────────────────────
-        let duration   = 25 * 60;
-        let timeLeft   = duration;
-        let running    = false;
-        let sessionStarted = false;  // true once timer has ticked at least once
-        let intervalId = null;
-        let loopGen    = 0;
-        let loopTimeoutId = null;
-        let notes      = [];
-        let weekKey    = '';
-        let history    = [];
-        let audioCtx   = null;
-        let soundOn    = true;
-        let activeMelodyId = 'ode';
-        let totalSessionsEver = 0;
-
-        function getActiveMelody() {
-            return MELODIES.find(m => m.id === activeMelodyId) || MELODIES[0];
-        }
-
-        // ── DOM ──────────────────────────────────────────────────────
-        const timerDisplay  = document.getElementById('timerDisplay');
-        const timerStatus   = document.getElementById('timerStatus');
-        const timerRing     = document.getElementById('timerRing');
-        const startBtn      = document.getElementById('startBtn');
-        const resetBtn      = document.getElementById('resetBtn');
-        const abandonBtn    = document.getElementById('abandonBtn');
-        const stopMelodyBtn = document.getElementById('stopMelodyBtn');
-        const playBtn       = document.getElementById('playBtn');
-        const notesGrid     = document.getElementById('notesGrid');
-        const trackSlots    = document.getElementById('trackSlots');
-        const trackCount    = document.getElementById('trackCount');
-        const trackTitle    = document.getElementById('trackTitle');
-        const banner        = document.getElementById('banner');
-        const flash         = document.getElementById('flash');
-        const weekLabel     = document.getElementById('weekLabel');
-        const timerWrap     = document.getElementById('timerWrap');
-        const sessionComplete = document.getElementById('sessionComplete');
-        const completeTitle = document.getElementById('completeTitle');
-        const completeSub   = document.getElementById('completeSub');
-        const completeTrack = document.getElementById('completeTrack');
-        const newNoteSymbol = document.getElementById('newNoteSymbol');
-        const holoDisk      = document.getElementById('holoDisk');
-        const cassetteGrid  = document.getElementById('cassetteGrid');
-        const soundToggle   = document.getElementById('soundToggle');
-        const toast         = document.getElementById('toast');
-
-        // ── Persistence ──────────────────────────────────────────────
-        function getWeekKey() {
-            const d = new Date(), day = d.getDay();
-            const mon = new Date(d);
-            mon.setDate(d.getDate() - ((day + 6) % 7));
-            return `${mon.getFullYear()}-W${mon.toISOString().slice(0,10)}`;
-        }
-
-        function weekKeyToLabel(wk) {
-            const dateStr = wk.replace(/^\d{4}-W/, '');
-            const d = new Date(dateStr);
-            return `${d.getMonth()+1}월 ${d.getDate()}일 주`;
-        }
-
-        function loadState() {
-            try {
-                const s = JSON.parse(localStorage.getItem('fm_v5') || '{}');
-                weekKey = getWeekKey();
-                history = s.history || [];
-                soundOn = s.settings?.soundOn !== false;
-                activeMelodyId = s.settings?.melodyId || 'ode';
-                totalSessionsEver = s.totalSessions || 0;
-
-                if (s.currentWeek && s.currentWeek.weekKey === weekKey
-                    && s.currentWeek.melodyId === activeMelodyId) {
-                    notes = s.currentWeek.notes || [];
-                } else {
-                    if (s.currentWeek && s.currentWeek.notes?.length > 0) {
-                        const old = s.currentWeek;
-                        if (!history.find(h => h.weekKey === old.weekKey && h.melodyId === old.melodyId)) {
-                            history.push({ weekKey: old.weekKey, notes: old.notes, melodyId: old.melodyId || 'ode' });
-                        }
-                    }
-                    notes = [];
-                }
-            } catch {
-                notes = []; weekKey = getWeekKey(); history = []; totalSessionsEver = 0;
-            }
-        }
-
-        function saveState() {
-            localStorage.setItem('fm_v5', JSON.stringify({
-                currentWeek: { weekKey, notes, melodyId: activeMelodyId },
-                history,
-                settings: { melodyId: activeMelodyId, soundOn },
-                totalSessions: totalSessionsEver,
-            }));
-        }
-
-        // ── Audio ────────────────────────────────────────────────────
-        function getAudioCtx() {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            return audioCtx;
-        }
-
-        function playNote(freq, startAt, dur = NOTE_DUR, vol = 0.22) {
-            if (!soundOn) return;
-            const ctx = getAudioCtx();
-            const osc = ctx.createOscillator(), osc2 = ctx.createOscillator();
-            const gain = ctx.createGain(), filter = ctx.createBiquadFilter();
-            osc.connect(filter); osc2.connect(filter);
-            filter.connect(gain); gain.connect(ctx.destination);
-            osc.type = 'sine'; osc2.type = 'triangle';
-            osc.frequency.setValueAtTime(freq, startAt);
-            osc2.frequency.setValueAtTime(freq * 2, startAt);
-            filter.type = 'lowpass'; filter.frequency.setValueAtTime(2200, startAt);
-            gain.gain.setValueAtTime(0, startAt);
-            gain.gain.linearRampToValueAtTime(vol, startAt + 0.04);
-            gain.gain.setValueAtTime(vol, startAt + dur * 0.6);
-            gain.gain.exponentialRampToValueAtTime(0.001, startAt + dur);
-            const t = startAt + dur + 0.05;
-            osc.start(startAt); osc.stop(t);
-            osc2.start(startAt); osc2.stop(t);
-        }
-
-        function playMelody(noteArr, onNote) {
-            if (!soundOn) return;
-            const arr = noteArr || notes;
-            if (!arr.length) return;
-            const ctx = getAudioCtx();
-            const m = getActiveMelody();
-            arr.forEach((_, i) => {
-                const freq = m.freqs[i % m.freqs.length];
-                playNote(freq, ctx.currentTime + i * NOTE_STEP + 0.08);
-                if (onNote) setTimeout(() => onNote(i), (i * NOTE_STEP + 0.08) * 1000);
-            });
-        }
-
-        function playMelodyForCollection(notesArr, melodyId, onNote) {
-            if (!soundOn) return;
-            const arr = notesArr;
-            if (!arr.length) return;
-            const m = MELODIES.find(x => x.id === melodyId) || MELODIES[0];
-            const ctx = getAudioCtx();
-            arr.forEach((_, i) => {
-                const freq = m.freqs[i % m.freqs.length];
-                playNote(freq, ctx.currentTime + i * NOTE_STEP + 0.08);
-                if (onNote) setTimeout(() => onNote(i), (i * NOTE_STEP + 0.08) * 1000);
-            });
-        }
-
-        // ── Melody loop ──────────────────────────────────────────────
-        function melodyDurationMs(arr) {
-            const a = arr || notes;
-            return ((a.length - 1) * NOTE_STEP + NOTE_DUR + 1.5) * 1000;
-        }
-
-        function startMelodyLoop(noteArr, melodyId) {
-            const arr = noteArr || notes;
-            if (!arr.length || !soundOn) return;
-            const mid = melodyId || activeMelodyId;
-            const myGen = ++loopGen;
-
-            function playOnce() {
-                if (myGen !== loopGen) return;
-                if (mid === activeMelodyId && !noteArr) {
-                    playMelody(arr, i => highlightChip(i));
-                } else {
-                    playMelodyForCollection(arr, mid, null);
-                }
-                loopTimeoutId = setTimeout(playOnce, melodyDurationMs(arr));
-            }
-            loopTimeoutId = setTimeout(playOnce, 600);
-        }
-
-        function stopMelodyLoop() {
-            loopGen++;
-            clearTimeout(loopTimeoutId);
-            loopTimeoutId = null;
-            if (audioCtx) { audioCtx.close(); audioCtx = null; }
-        }
-
-        // ── Timer ────────────────────────────────────────────────────
-        function fmt(s) {
-            return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
-        }
-
-        function setRing(frac) {
-            const offset = CIRCUMFERENCE * (1 - Math.max(0, frac));
-            timerRing.style.strokeDashoffset = offset;
-            const glowEl = document.querySelector('.timer-glow');
-            if (glowEl) glowEl.style.strokeDashoffset = offset;
-        }
-
-        function tick() {
-            if (timeLeft <= 0) {
-                clearInterval(intervalId);
-                running = false;
-                sessionStarted = false;
-                startBtn.textContent = '▶';
-                startBtn.classList.remove('running');
-                timerStatus.textContent = '완료!';
-                updateAbandonVisibility();
-                onComplete();
-                return;
-            }
-            timeLeft--;
-            timerDisplay.textContent = fmt(timeLeft);
-            setRing(timeLeft / duration);
-        }
-
-        function startPause() {
-            if (running) {
-                clearInterval(intervalId);
-                running = false;
-                startBtn.textContent = '▶';
-                startBtn.classList.remove('running');
-                timerStatus.textContent = '일시정지';
-            } else {
-                stopMelodyLoop();
-                stopMelodyBtn.style.display = 'none';
-                if (soundOn) getAudioCtx();
-                running = true;
-                sessionStarted = true;
-                startBtn.textContent = '⏸';
-                startBtn.classList.add('running');
-                timerStatus.textContent = '집중 중...';
-                intervalId = setInterval(tick, 1000);
-            }
-            updateAbandonVisibility();
-        }
-
-        function resetTimer() {
-            clearInterval(intervalId);
-            stopMelodyLoop();
-            stopMelodyBtn.style.display = 'none';
-            running = false;
-            sessionStarted = false;
-            timeLeft = duration;
-            timerDisplay.textContent = fmt(timeLeft);
-            timerStatus.textContent = '준비';
-            startBtn.textContent = '▶';
-            startBtn.classList.remove('running');
-            setRing(1);
-            updateAbandonVisibility();
-        }
-
-        function forceEndSession() {
-            clearInterval(intervalId);
-            stopMelodyLoop();
-            stopMelodyBtn.style.display = 'none';
-            running = false;
-            sessionStarted = false;
-            timeLeft = duration;
-            timerDisplay.textContent = fmt(timeLeft);
-            timerStatus.textContent = '준비';
-            startBtn.textContent = '▶';
-            startBtn.classList.remove('running');
-            setRing(1);
-            updateAbandonVisibility();
-            showToast('세션을 포기했어요. 음표는 쌓이지 않았어요 🙈');
-        }
-
-        function updateAbandonVisibility() {
-            abandonBtn.style.display = sessionStarted ? '' : 'none';
-        }
-
-        // ── Session Complete ─────────────────────────────────────────
-        function onComplete() {
-            const m = getActiveMelody();
-            if (notes.length < m.total) {
-                notes.push(notes.length);
-                totalSessionsEver++;
-                saveState();
-                renderTrackSlots();
-                renderNotes();
-                spawnFloatingNote();
-                flash.classList.add('on');
-                setTimeout(() => flash.classList.remove('on'), 700);
-            }
-
-            if (notes.length >= m.total) {
-                banner.classList.add('show');
-                if (!history.find(h => h.weekKey === weekKey && h.melodyId === activeMelodyId)) {
-                    history.push({ weekKey, notes: [...notes], melodyId: activeMelodyId });
-                    saveState();
-                }
-            }
-
-            showSessionComplete();
-        }
-
-        function showSessionComplete() {
-            const m = getActiveMelody();
-            const n = notes.length;
-            const sym = NOTE_SYMBOLS[(n - 1) % NOTE_SYMBOLS.length];
-            const noteName = m.noteNames[(n - 1) % m.noteNames.length];
-
-            newNoteSymbol.textContent = sym;
-            completeTitle.textContent = `${n}번째 음 추가됐어요!`;
-            completeSub.textContent = `${noteName} · ${m.name} · ${n} / ${m.total}`;
-
-            completeTrack.innerHTML = Array.from({ length: m.total }, (_, i) => {
-                const cls = i < n - 1 ? 'filled' : i === n - 1 ? 'new-one' : '';
-                return `<div class="complete-slot ${cls}"></div>`;
-            }).join('');
-
-            spawnConfetti();
-            sessionComplete.classList.add('show');
-
-            if (soundOn) startMelodyLoop();
-        }
-
-        function hideSessionComplete(doReset) {
-            sessionComplete.classList.remove('show');
-            if (doReset) {
-                resetTimer();
-            } else {
-                if (soundOn) stopMelodyBtn.style.display = '';
-            }
-        }
-
-        // ── Holodisk click: play individual new note ─────────────────
-        holoDisk.addEventListener('click', () => {
-            const m = getActiveMelody();
-            const n = notes.length;
-            if (!n || !soundOn) return;
-            const freq = m.freqs[(n - 1) % m.freqs.length];
-            if (soundOn) getAudioCtx();
-            const ctx = getAudioCtx();
-            playNote(freq, ctx.currentTime + 0.05, 1.2, 0.3);
-        });
-
-        // ── Confetti / floating note ─────────────────────────────────
-        function spawnConfetti() {
-            const pieces = ['✦','✧','♪','♫','♥','★','🎵','🌸'];
-            for (let i = 0; i < 18; i++) {
-                setTimeout(() => {
-                    const el = document.createElement('div');
-                    el.className = 'confetti-piece';
-                    el.textContent = pieces[Math.floor(Math.random() * pieces.length)];
-                    el.style.left = Math.random() * 100 + 'vw';
-                    el.style.top = '-20px';
-                    el.style.setProperty('--dx', (Math.random() * 120 - 60) + 'px');
-                    el.style.animationDuration = (1.5 + Math.random() * 2) + 's';
-                    el.style.animationDelay = (Math.random() * 0.5) + 's';
-                    el.style.fontSize = (1 + Math.random()) + 'rem';
-                    document.body.appendChild(el);
-                    setTimeout(() => el.remove(), 4000);
-                }, i * 80);
-            }
-        }
-
-        function spawnFloatingNote() {
-            const r = timerWrap.getBoundingClientRect();
-            const el = document.createElement('div');
-            el.className = 'fnote';
-            el.textContent = NOTE_SYMBOLS[notes.length % NOTE_SYMBOLS.length];
-            el.style.left = (r.left + r.width / 2 - 16) + 'px';
-            el.style.top  = (r.top  + r.height / 2) + 'px';
-            document.body.appendChild(el);
-            setTimeout(() => el.remove(), 1500);
-        }
-
-        function highlightChip(index) {
-            const chip = notesGrid.querySelectorAll('.note-chip')[index];
-            if (!chip) return;
-            chip.classList.remove('lit');
-            void chip.offsetWidth;
-            chip.classList.add('lit');
-        }
-
-        // ── Toast ────────────────────────────────────────────────────
-        let toastTimer = null;
-        function showToast(msg, ms = 2800) {
-            toast.textContent = msg;
-            toast.classList.add('show');
-            clearTimeout(toastTimer);
-            toastTimer = setTimeout(() => toast.classList.remove('show'), ms);
-        }
-
-        // ── Render ───────────────────────────────────────────────────
-        function renderTrackSlots() {
-            const m = getActiveMelody();
-            trackSlots.innerHTML = Array.from({ length: m.total }, (_, i) =>
-                `<div class="slot ${i < notes.length ? 'filled' : ''}"></div>`
-            ).join('');
-            trackCount.textContent = `${notes.length} / ${m.total}`;
-            trackTitle.textContent = `${m.name} 트랙`;
-        }
-
-        function renderNotes() {
-            const m = getActiveMelody();
-            playBtn.disabled = notes.length === 0;
-
-            if (notes.length === 0) {
-                notesGrid.innerHTML = '<p class="empty-hint">집중 세션을 완료하면 음이 쌓여요 🎵</p>';
-                return;
-            }
-            notesGrid.innerHTML = notes.map((_, i) => {
-                const sym = NOTE_SYMBOLS[i % NOTE_SYMBOLS.length];
-                const [color, bg] = PALETTES[i % PALETTES.length];
-                const name = m.noteNames[i];
-                return `<div class="note-chip" title="${name}" style="background:${bg};border-color:${color};color:${color};box-shadow:2px 2px 0 ${color};">${sym}</div>`;
-            }).join('');
-
-            if (notes.length >= m.total) banner.classList.add('show');
-        }
-
-        function renderCollection() {
-            const allWeeks = [];
-            history.forEach(hw => {
-                if (!(hw.weekKey === weekKey && hw.melodyId === activeMelodyId))
-                    allWeeks.push({ ...hw, isCurrent: false });
-            });
-            if (notes.length > 0) allWeeks.push({ weekKey, notes, melodyId: activeMelodyId, isCurrent: true });
-            allWeeks.reverse();
-
-            if (allWeeks.length === 0) {
-                cassetteGrid.innerHTML = '<div class="empty-collection">집중 세션을 완료하면<br>카세트가 쌓여요 🎵</div>';
-                return;
-            }
-
-            const colors = ['#ff7eb0','#7fe3c8','#c9b3ff','#ffc585','#7fc8ff'];
-            cassetteGrid.innerHTML = allWeeks.map((wk, idx) => {
-                const m = MELODIES.find(x => x.id === wk.melodyId) || MELODIES[0];
-                const inProgress = wk.isCurrent && wk.notes.length < m.total;
-                const color = colors[idx % colors.length];
-                const dots = Array.from({ length: m.total }, (_, i) =>
-                    `<div class="cassette-dot ${i < wk.notes.length ? 'filled' : ''}"></div>`
-                ).join('');
-                const label = inProgress
-                    ? `진행 중 · ${wk.notes.length} / ${m.total}`
-                    : `완성 · ${wk.notes.length}음`;
-                const weekText = wk.isCurrent ? '이번 주' : weekKeyToLabel(wk.weekKey);
-
-                return `<div class="cassette ${inProgress ? 'in-progress' : ''}" data-idx="${idx}" data-melody="${wk.melodyId}">
-                    <div class="cassette-window" style="background:rgba(${hexToRgb(color)},.08)">
-                        <div class="reel" style="border-color:${color};"></div>
-                        <div class="cassette-tape-line"></div>
-                        <div class="reel" style="border-color:${color};"></div>
-                    </div>
-                    <div class="cassette-dots">${dots}</div>
-                    <div class="cassette-label">${weekText}</div>
-                    <div class="cassette-melody-name">${m.emoji} ${m.name}</div>
-                    <div class="cassette-week">${label}</div>
-                    ${!inProgress ? `<button class="cassette-play-btn" data-idx="${idx}">▶ 듣기</button>` : ''}
-                </div>`;
-            }).join('');
-
-            // Bind play buttons in collection
-            cassetteGrid.querySelectorAll('.cassette-play-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const idx = parseInt(btn.dataset.idx);
-                    const wk = allWeeks[idx];
-                    if (!wk) return;
-                    stopMelodyLoop();
-                    if (soundOn) getAudioCtx();
-                    startMelodyLoop(wk.notes, wk.melodyId);
-                    document.querySelectorAll('.cassette').forEach(c => c.classList.remove('playing'));
-                    btn.closest('.cassette').classList.add('playing');
-                    const origText = btn.textContent;
-                    btn.textContent = '■ 멈추기';
-                    const stop = (ev) => {
-                        if (ev) ev.stopPropagation();
-                        stopMelodyLoop();
-                        btn.closest('.cassette').classList.remove('playing');
-                        btn.textContent = origText;
-                        btn.removeEventListener('click', stop);
-                        btn.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            if (soundOn) getAudioCtx();
-                            startMelodyLoop(wk.notes, wk.melodyId);
-                            btn.closest('.cassette').classList.add('playing');
-                            btn.textContent = '■ 멈추기';
-                        }, { once: true });
-                    };
-                    btn.addEventListener('click', stop, { once: true });
-                });
-            });
-        }
-
-        function renderMelodyCards() {
-            const cardsEl = document.getElementById('melodyCards');
-            cardsEl.innerHTML = MELODIES.map(m => `
-                <div class="melody-card ${m.id === activeMelodyId ? 'active' : ''}" data-melody="${m.id}">
-                    <div class="melody-card-check">✓</div>
-                    <span class="melody-card-emoji">${m.emoji}</span>
-                    <span class="melody-card-name">${m.name}</span>
-                    <span class="melody-card-desc">${m.desc}</span>
-                    <button class="melody-preview-btn" data-preview="${m.id}">▶ 미리듣기</button>
-                </div>
-            `).join('');
-
-            cardsEl.querySelectorAll('.melody-card').forEach(card => {
-                card.addEventListener('click', (e) => {
-                    if (e.target.classList.contains('melody-preview-btn')) return;
-                    const mid = card.dataset.melody;
-                    if (mid === activeMelodyId) return;
-
-                    if (notes.length > 0) {
-                        const ok = confirm(`멜로디를 바꾸면 이번 주 진행 중인 내용(${notes.length}음)이 보관함에 저장되고 새로 시작해요. 계속할까요?`);
-                        if (!ok) return;
-                        // Archive current progress
-                        if (!history.find(h => h.weekKey === weekKey && h.melodyId === activeMelodyId)) {
-                            history.push({ weekKey, notes: [...notes], melodyId: activeMelodyId });
-                        }
-                    }
-
-                    activeMelodyId = mid;
-                    notes = [];
-                    banner.classList.remove('show');
-                    saveState();
-                    renderTrackSlots();
-                    renderNotes();
-                    renderMelodyCards();
-                    updateWeekLabel();
-                    showToast(`${getActiveMelody().name}으로 바꿨어요 ${getActiveMelody().emoji}`);
-                });
-            });
-
-            cardsEl.querySelectorAll('.melody-preview-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const mid = btn.dataset.preview;
-                    const m = MELODIES.find(x => x.id === mid);
-                    if (!m || !soundOn) {
-                        if (!soundOn) showToast('소리가 꺼져 있어요 🔇');
-                        return;
-                    }
-                    stopMelodyLoop();
-                    if (soundOn) getAudioCtx();
-                    // Play a short preview (first 4 notes)
-                    const ctx = getAudioCtx();
-                    const preview = m.freqs.slice(0, 5);
-                    preview.forEach((freq, i) => {
-                        playNote(freq, ctx.currentTime + i * NOTE_STEP + 0.05, NOTE_DUR, 0.2);
-                    });
-                });
-            });
-        }
-
-        function renderStats() {
-            const m = getActiveMelody();
-            const completedWeeks = history.filter(h => {
-                const hm = MELODIES.find(x => x.id === h.melodyId) || MELODIES[0];
-                return h.notes.length >= hm.total;
-            }).length;
-            const completion = m.total > 0 ? Math.round((notes.length / m.total) * 100) : 0;
-
-            document.getElementById('statTotal').textContent = totalSessionsEver;
-            document.getElementById('statWeeks').textContent = completedWeeks;
-            document.getElementById('statThis').textContent = notes.length;
-            document.getElementById('statStreak').textContent = completion;
-        }
-
-        function hexToRgb(hex) {
-            const r = parseInt(hex.slice(1,3),16);
-            const g = parseInt(hex.slice(3,5),16);
-            const b = parseInt(hex.slice(5,7),16);
-            return `${r},${g},${b}`;
-        }
-
-        function updateWeekLabel() {
-            const days = ['일','월','화','수','목','금','토'];
-            const m = getActiveMelody();
-            weekLabel.textContent = `${days[new Date().getDay()]}요일 · ${notes.length}/${m.total}`;
-        }
-
-        // ── View switching ───────────────────────────────────────────
-        document.querySelectorAll('.nav-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-                tab.classList.add('active');
-                const view = document.getElementById(tab.dataset.view);
-                view.classList.add('active');
-                if (tab.dataset.view === 'collectionView') renderCollection();
-                if (tab.dataset.view === 'settingsView') { renderMelodyCards(); renderStats(); }
-            });
-        });
-
-        // ── Events ───────────────────────────────────────────────────
-        startBtn.addEventListener('click', startPause);
-        resetBtn.addEventListener('click', resetTimer);
-        abandonBtn.addEventListener('click', forceEndSession);
-
-        stopMelodyBtn.addEventListener('click', () => {
-            stopMelodyLoop();
-            stopMelodyBtn.style.display = 'none';
-        });
-
-        playBtn.addEventListener('click', () => {
-            if (!soundOn) { showToast('소리가 꺼져 있어요 🔇'); return; }
-            getAudioCtx();
-            playMelody(null, i => highlightChip(i));
-        });
-
-        document.querySelectorAll('.dur-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                if (running) return;
-                document.querySelectorAll('.dur-btn').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                duration = parseInt(btn.dataset.min) * 60;
-                timeLeft  = duration;
-                timerDisplay.textContent = fmt(timeLeft);
-                setRing(1);
-            });
-        });
-
-        document.getElementById('nextSessionBtn').addEventListener('click', () => {
-            hideSessionComplete(true);
-        });
-
-        document.getElementById('closeCompleteBtn').addEventListener('click', () => {
-            hideSessionComplete(false);
-        });
-
-        soundToggle.addEventListener('click', () => {
-            soundOn = !soundOn;
-            soundToggle.classList.toggle('on', soundOn);
-            if (!soundOn) {
-                stopMelodyLoop();
-                stopMelodyBtn.style.display = 'none';
-            }
-            saveState();
-            showToast(soundOn ? '소리 켜짐 🔊' : '소리 꺼짐 🔇');
-        });
-
-        // Space key: start/pause
-        document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space' && e.target.tagName !== 'BUTTON' && e.target.tagName !== 'INPUT') {
-                e.preventDefault();
-                // Only if on timer view
-                const timerView = document.getElementById('timerView');
-                if (timerView.classList.contains('active')) {
-                    startPause();
-                }
-            }
-        });
-
-        // ── Init ─────────────────────────────────────────────────────
-        loadState();
-        soundToggle.classList.toggle('on', soundOn);
-        renderTrackSlots();
-        renderNotes();
-        updateWeekLabel();
-        updateAbandonVisibility();
-        timerDisplay.textContent = fmt(timeLeft);
-        setRing(1);
-        setInterval(updateWeekLabel, 60_000);
-    </script>
+    <div>
+      <div style="font-size:.65rem;letter-spacing:.25em;text-transform:uppercase;color:#9a8d80;font-weight:600;margin-bottom:.7rem;">통계</div>
+      <div style="padding:1rem;background:#fff;border:1.5px solid #241f1a;border-radius:12px;box-shadow:3px 3px 0 #241f1a;display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div style="text-align:center;"><span id="statTotal" style="font-family:'Caveat',cursive;font-size:2rem;font-weight:700;color:#ff7eb0;display:block;">0</span><span style="font-size:.72rem;color:#9a8d80;">총 완료 세션</span></div>
+        <div style="text-align:center;"><span id="statWeeks" style="font-family:'Caveat',cursive;font-size:2rem;font-weight:700;color:#ff7eb0;display:block;">0</span><span style="font-size:.72rem;color:#9a8d80;">완성한 멜로디</span></div>
+        <div style="text-align:center;"><span id="statThis" style="font-family:'Caveat',cursive;font-size:2rem;font-weight:700;color:#ff7eb0;display:block;">0</span><span style="font-size:.72rem;color:#9a8d80;">이번 주 음표</span></div>
+        <div style="text-align:center;"><span id="statStreak" style="font-family:'Caveat',cursive;font-size:2rem;font-weight:700;color:#ff7eb0;display:block;">0</span><span style="font-size:.72rem;color:#9a8d80;">완성률 %</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Melody Definitions ──────────────────────────────────────────────
+const MELODIES = [
+  { id:'ode', name:'기쁨의 송가', emoji:'🎵', desc:'Ode to Joy · 14♪', total:14,
+    freqs:[329.63,329.63,349.23,392,392,349.23,329.63,293.66,261.63,261.63,293.66,329.63,329.63,293.66],
+    noteNames:['미','미','파','솔','솔','파','미','레','도','도','레','미','미','레'] },
+  { id:'birthday', name:'생일 축하해', emoji:'🎂', desc:'Happy Birthday · 12♪', total:12,
+    freqs:[261.63,261.63,293.66,261.63,349.23,329.63,261.63,261.63,293.66,261.63,392,349.23],
+    noteNames:['도','도','레','도','파','미','도','도','레','도','솔','파'] },
+  { id:'twinkle', name:'반짝반짝', emoji:'⭐', desc:'Twinkle Twinkle · 14♪', total:14,
+    freqs:[261.63,261.63,392,392,440,440,392,349.23,349.23,329.63,329.63,293.66,293.66,261.63],
+    noteNames:['도','도','솔','솔','라','라','솔','파','파','미','미','레','레','도'] },
+];
+
+// ── Constants ───────────────────────────────────────────────────────
+const NOTE_STEP = 0.58, NOTE_DUR = 0.55;
+const NOTE_SYMBOLS = ['♩','♪','♫','♬'];
+const LABEL_COLORS = ['#ff7eb0','#7fe3c8','#c9b3ff','#ffc585','#7fc8ff','#ff9f7f'];
+
+// ── State ────────────────────────────────────────────────────────────
+let duration = 25*60, timeLeft = 25*60;
+let running = false, sessionStarted = false;
+let intervalId = null;
+let loopGen = 0, loopTimeoutId = null;
+let notes = [], weekKey = '', history = [];
+let audioCtx = null, soundOn = true;
+let activeMelodyId = 'ode';
+let totalSessionsEver = 0;
+let carouselIndex = 0;
+let carouselRecords = [];
+
+function getActiveMelody() { return MELODIES.find(m=>m.id===activeMelodyId)||MELODIES[0]; }
+
+// ── DOM ──────────────────────────────────────────────────────────────
+const startBtn       = document.getElementById('startBtn');
+const startIcon      = document.getElementById('startIcon');
+const startLabel     = document.getElementById('startLabel');
+const resetBtn       = document.getElementById('resetBtn');
+const abandonBtn     = document.getElementById('abandonBtn');
+const stopMelodyBtn  = document.getElementById('stopMelodyBtn');
+const timeSetBtn     = document.getElementById('timeSetBtn');
+const tunerWedge     = document.getElementById('tunerWedge');
+const tunerPointer   = document.getElementById('tunerPointer');
+const tunerTimeEl    = document.getElementById('tunerTime');
+const tunerStatusEl  = document.getElementById('tunerStatus');
+const tunerModeEl    = document.getElementById('tunerMode');
+const recIndicator   = document.getElementById('recIndicator');
+const lcdTime        = document.getElementById('lcdTime');
+const lcdMelody      = document.getElementById('lcdMelody');
+const lcdUnlocked    = document.getElementById('lcdUnlocked');
+const lcdFocus       = document.getElementById('lcdFocus');
+const melodyDots     = document.getElementById('melodyDots');
+const pianoKeys      = document.getElementById('pianoKeys');
+const flash          = document.getElementById('flash');
+const weekLabel      = document.getElementById('weekLabel');
+const sessionComplete = document.getElementById('sessionComplete');
+const completeTitle  = document.getElementById('completeTitle');
+const completeSub    = document.getElementById('completeSub');
+const completeTrack  = document.getElementById('completeTrack');
+const newNoteSymbol  = document.getElementById('newNoteSymbol');
+const holoDisk       = document.getElementById('holoDisk');
+const soundToggle    = document.getElementById('soundToggle');
+const toast          = document.getElementById('toast');
+const timeSetModal   = document.getElementById('timeSetModal');
+
+// ── Persistence ──────────────────────────────────────────────────────
+function getWeekKey() {
+  const d=new Date(), day=d.getDay();
+  const mon=new Date(d);
+  mon.setDate(d.getDate()-((day+6)%7));
+  return `${mon.getFullYear()}-W${mon.toISOString().slice(0,10)}`;
+}
+function weekKeyToLabel(wk) {
+  const dateStr=wk.replace(/^\d{4}-W/,'');
+  const d=new Date(dateStr);
+  return `${d.getMonth()+1}월 ${d.getDate()}일 주`;
+}
+function loadState() {
+  try {
+    const s=JSON.parse(localStorage.getItem('fm_v5')||'{}');
+    weekKey=getWeekKey();
+    history=s.history||[];
+    soundOn=s.settings?.soundOn!==false;
+    activeMelodyId=s.settings?.melodyId||'ode';
+    totalSessionsEver=s.totalSessions||0;
+    if(s.currentWeek && s.currentWeek.weekKey===weekKey && s.currentWeek.melodyId===activeMelodyId) {
+      notes=s.currentWeek.notes||[];
+    } else {
+      if(s.currentWeek && s.currentWeek.notes?.length>0) {
+        const old=s.currentWeek;
+        if(!history.find(h=>h.weekKey===old.weekKey&&h.melodyId===old.melodyId))
+          history.push({weekKey:old.weekKey,notes:old.notes,melodyId:old.melodyId||'ode'});
+      }
+      notes=[];
+    }
+  } catch { notes=[];weekKey=getWeekKey();history=[];totalSessionsEver=0; }
+}
+function saveState() {
+  localStorage.setItem('fm_v5',JSON.stringify({
+    currentWeek:{weekKey,notes,melodyId:activeMelodyId},
+    history, settings:{melodyId:activeMelodyId,soundOn}, totalSessions:totalSessionsEver
+  }));
+}
+
+// ── Audio ────────────────────────────────────────────────────────────
+function getAudioCtx() {
+  if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  return audioCtx;
+}
+function playNote(freq,startAt,dur=NOTE_DUR,vol=0.22) {
+  if(!soundOn) return;
+  const ctx=getAudioCtx();
+  const osc=ctx.createOscillator(),osc2=ctx.createOscillator();
+  const gain=ctx.createGain(),filter=ctx.createBiquadFilter();
+  osc.connect(filter);osc2.connect(filter);filter.connect(gain);gain.connect(ctx.destination);
+  osc.type='sine';osc2.type='triangle';
+  osc.frequency.setValueAtTime(freq,startAt);
+  osc2.frequency.setValueAtTime(freq*2,startAt);
+  filter.type='lowpass';filter.frequency.setValueAtTime(2200,startAt);
+  gain.gain.setValueAtTime(0,startAt);
+  gain.gain.linearRampToValueAtTime(vol,startAt+0.04);
+  gain.gain.setValueAtTime(vol,startAt+dur*0.6);
+  gain.gain.exponentialRampToValueAtTime(0.001,startAt+dur);
+  const t=startAt+dur+0.05;
+  osc.start(startAt);osc.stop(t);
+  osc2.start(startAt);osc2.stop(t);
+}
+function playMelody(noteArr,onNote) {
+  if(!soundOn) return;
+  const arr=noteArr||notes;
+  if(!arr.length) return;
+  const ctx=getAudioCtx();
+  const m=getActiveMelody();
+  arr.forEach((_,i)=>{
+    playNote(m.freqs[i%m.freqs.length],ctx.currentTime+i*NOTE_STEP+0.08);
+    if(onNote) setTimeout(()=>onNote(i),(i*NOTE_STEP+0.08)*1000);
+  });
+}
+function playMelodyForCollection(notesArr,melodyId,onNote) {
+  if(!soundOn) return;
+  if(!notesArr.length) return;
+  const m=MELODIES.find(x=>x.id===melodyId)||MELODIES[0];
+  const ctx=getAudioCtx();
+  notesArr.forEach((_,i)=>{
+    playNote(m.freqs[i%m.freqs.length],ctx.currentTime+i*NOTE_STEP+0.08);
+    if(onNote) setTimeout(()=>onNote(i),(i*NOTE_STEP+0.08)*1000);
+  });
+}
+function melodyDurationMs(arr) {
+  const a=arr||notes;
+  return((a.length-1)*NOTE_STEP+NOTE_DUR+1.5)*1000;
+}
+function startMelodyLoop(noteArr,melodyId) {
+  const arr=noteArr||notes;
+  if(!arr.length||!soundOn) return;
+  const mid=melodyId||activeMelodyId;
+  const myGen=++loopGen;
+  function playOnce() {
+    if(myGen!==loopGen) return;
+    if(mid===activeMelodyId&&!noteArr) playMelody(arr,i=>highlightKey(i));
+    else playMelodyForCollection(arr,mid,null);
+    loopTimeoutId=setTimeout(playOnce,melodyDurationMs(arr));
+  }
+  loopTimeoutId=setTimeout(playOnce,600);
+}
+function stopMelodyLoop() {
+  loopGen++;
+  clearTimeout(loopTimeoutId);
+  loopTimeoutId=null;
+  if(audioCtx){audioCtx.close();audioCtx=null;}
+}
+
+// ── Timer ────────────────────────────────────────────────────────────
+function fmt(s) {
+  return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+}
+
+function updateTunerDial() {
+  const elapsed=duration-timeLeft;
+  const frac=elapsed/duration;
+  // Rotate pointer
+  tunerPointer.style.transform=`rotate(${frac*360}deg)`;
+  // Update wedge path (from top, clockwise)
+  const cx=125,cy=125,r=96;
+  if(frac<=0){tunerWedge.setAttribute('d','');return;}
+  if(frac>=0.9999){
+    tunerWedge.setAttribute('d',`M${cx} ${cy-r} A${r} ${r} 0 1 1 ${cx-0.01} ${cy-r} Z`);
+    return;
+  }
+  const angle=frac*2*Math.PI;
+  const endX=cx+r*Math.sin(angle);
+  const endY=cy-r*Math.cos(angle);
+  const large=frac>0.5?1:0;
+  tunerWedge.setAttribute('d',`M${cx} ${cy} L${cx} ${cy-r} A${r} ${r} 0 ${large} 1 ${endX} ${endY} Z`);
+}
+
+function updateDisplays() {
+  const t=fmt(timeLeft);
+  tunerTimeEl.textContent=t;
+  lcdTime.textContent=t;
+  const m=getActiveMelody();
+  lcdUnlocked.textContent=`UNLOCKED · ${notes.length} OF ${m.total}`;
+}
+
+function setTimerStatus(label) {
+  tunerStatusEl.textContent=`● ${label}`;
+  lcdFocus.textContent=`● ${label}`;
+  tunerModeEl.textContent=label;
+  recIndicator.textContent=running?'● REC':'● '+label;
+}
+
+function tick() {
+  if(timeLeft<=0){
+    clearInterval(intervalId);
+    running=false;sessionStarted=false;
+    updateDisplays();
+    setTimerStatus('DONE');
+    updateAbandonVisibility();
+    onComplete();
+    return;
+  }
+  timeLeft--;
+  updateDisplays();
+  updateTunerDial();
+}
+
+function startPause() {
+  if(running){
+    clearInterval(intervalId);
+    running=false;
+    startIcon.textContent='play_arrow';
+    startLabel.textContent='집중 시작';
+    startBtn.classList.remove('running');
+    setTimerStatus('PAUSED');
+  } else {
+    stopMelodyLoop();
+    stopMelodyBtn.style.display='none';
+    if(soundOn) getAudioCtx();
+    running=true;sessionStarted=true;
+    startIcon.textContent='pause';
+    startLabel.textContent='일시정지';
+    startBtn.classList.add('running');
+    setTimerStatus('FOCUS');
+    intervalId=setInterval(tick,1000);
+  }
+  updateAbandonVisibility();
+}
+
+function resetTimer() {
+  clearInterval(intervalId);
+  stopMelodyLoop();
+  stopMelodyBtn.style.display='none';
+  running=false;sessionStarted=false;
+  timeLeft=duration;
+  updateDisplays();
+  updateTunerDial();
+  startIcon.textContent='play_arrow';
+  startLabel.textContent='집중 시작';
+  startBtn.classList.remove('running');
+  setTimerStatus('READY');
+  updateAbandonVisibility();
+}
+
+function forceEndSession() {
+  clearInterval(intervalId);
+  stopMelodyLoop();
+  stopMelodyBtn.style.display='none';
+  running=false;sessionStarted=false;
+  timeLeft=duration;
+  updateDisplays();
+  updateTunerDial();
+  startIcon.textContent='play_arrow';
+  startLabel.textContent='집중 시작';
+  startBtn.classList.remove('running');
+  setTimerStatus('READY');
+  updateAbandonVisibility();
+  showToast('세션을 포기했어요. 음표는 쌓이지 않았어요 🙈');
+}
+
+function updateAbandonVisibility() {
+  abandonBtn.style.display=sessionStarted?'flex':'none';
+}
+
+// ── Session Complete ─────────────────────────────────────────────────
+function onComplete() {
+  const m=getActiveMelody();
+  if(notes.length<m.total){
+    notes.push(notes.length);
+    totalSessionsEver++;
+    saveState();
+    renderMelodyDots();
+    renderPianoKeys();
+    spawnFloatingNote();
+    flash.classList.add('on');
+    setTimeout(()=>flash.classList.remove('on'),700);
+  }
+  if(notes.length>=m.total){
+    if(!history.find(h=>h.weekKey===weekKey&&h.melodyId===activeMelodyId)){
+      history.push({weekKey,notes:[...notes],melodyId:activeMelodyId});
+      saveState();
+    }
+  }
+  showSessionComplete();
+}
+
+function showSessionComplete() {
+  const m=getActiveMelody();
+  const n=notes.length;
+  const sym=NOTE_SYMBOLS[(n-1)%NOTE_SYMBOLS.length];
+  const noteName=m.noteNames[(n-1)%m.noteNames.length];
+  newNoteSymbol.textContent=sym;
+  completeTitle.textContent=`${n}번째 음 추가됐어요!`;
+  completeSub.textContent=`${noteName} · ${m.name} · ${n} / ${m.total}`;
+  completeTrack.innerHTML=Array.from({length:m.total},(_,i)=>{
+    const cls=i<n-1?'filled':i===n-1?'new-one':'';
+    return `<div class="c-slot ${cls}"></div>`;
+  }).join('');
+  spawnConfetti();
+  sessionComplete.classList.add('show');
+  if(soundOn) startMelodyLoop();
+}
+
+function hideSessionComplete(doReset) {
+  sessionComplete.classList.remove('show');
+  if(doReset) resetTimer();
+  else if(soundOn) stopMelodyBtn.style.display='flex';
+}
+
+holoDisk.addEventListener('click',()=>{
+  const m=getActiveMelody();
+  const n=notes.length;
+  if(!n||!soundOn) return;
+  const ctx=getAudioCtx();
+  playNote(m.freqs[(n-1)%m.freqs.length],ctx.currentTime+0.05,1.2,0.3);
+});
+
+// ── Confetti / floating note ─────────────────────────────────────────
+function spawnConfetti() {
+  const pieces=['✦','✧','♪','♫','♥','★','🎵','🌸'];
+  for(let i=0;i<18;i++) setTimeout(()=>{
+    const el=document.createElement('div');
+    el.className='confetti-piece';
+    el.textContent=pieces[Math.floor(Math.random()*pieces.length)];
+    el.style.left=Math.random()*100+'vw';
+    el.style.top='-20px';
+    el.style.setProperty('--dx',(Math.random()*120-60)+'px');
+    el.style.animationDuration=(1.5+Math.random()*2)+'s';
+    el.style.animationDelay=(Math.random()*.5)+'s';
+    el.style.fontSize=(1+Math.random())+'rem';
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(),4000);
+  },i*80);
+}
+
+function spawnFloatingNote() {
+  const svgEl=document.getElementById('tunerSvg');
+  const r=svgEl.getBoundingClientRect();
+  const el=document.createElement('div');
+  el.className='fnote';
+  el.textContent=NOTE_SYMBOLS[notes.length%NOTE_SYMBOLS.length];
+  el.style.left=(r.left+r.width/2-16)+'px';
+  el.style.top=(r.top+r.height/2)+'px';
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),1500);
+}
+
+function highlightKey(index) {
+  const key=pianoKeys.querySelectorAll('.piano-key')[index];
+  if(!key) return;
+  key.classList.add('lit');
+  setTimeout(()=>key.classList.remove('lit'),350);
+}
+
+// ── Toast ────────────────────────────────────────────────────────────
+let toastTimer=null;
+function showToast(msg,ms=2800) {
+  toast.textContent=msg;
+  toast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>toast.classList.remove('show'),ms);
+}
+
+// ── Render ───────────────────────────────────────────────────────────
+function renderMelodyDots() {
+  const m=getActiveMelody();
+  melodyDots.innerHTML=Array.from({length:m.total},(_,i)=>{
+    const cls=i<notes.length?'filled':'';
+    return `<div class="mdot ${cls}" title="${m.noteNames[i]}"></div>`;
+  }).join('');
+}
+
+function renderPianoKeys() {
+  const m=getActiveMelody();
+  pianoKeys.innerHTML=Array.from({length:m.total},(_,i)=>{
+    const unlocked=i<notes.length;
+    if(unlocked) {
+      return `<button class="piano-key unlocked" data-index="${i}" title="${m.noteNames[i]} (${i+1}번째 음)">
+        <span style="font-family:'Caveat',cursive;font-size:.85rem;font-weight:700;color:#241f1a;">${m.noteNames[i]}</span>
+        <span style="font-family:'Major Mono Display',monospace;font-size:.55rem;color:rgba(36,31,26,.5);">${i+1}</span>
+      </button>`;
+    } else {
+      return `<div class="piano-key locked" title="잠긴 음">
+        <span class="material-symbols-outlined" style="font-size:14px;color:rgba(36,31,26,.3);">lock</span>
+      </div>`;
+    }
+  }).join('');
+
+  pianoKeys.querySelectorAll('.piano-key.unlocked').forEach(key=>{
+    key.addEventListener('click',()=>{
+      if(!soundOn){showToast('소리가 꺼져 있어요 🔇');return;}
+      const idx=parseInt(key.dataset.index);
+      const ctx=getAudioCtx();
+      playNote(m.freqs[idx],ctx.currentTime+0.05,1.0,0.25);
+      key.classList.add('lit');
+      setTimeout(()=>key.classList.remove('lit'),350);
+    });
+  });
+}
+
+function buildVinylSVG(size,labelColor,spin) {
+  const r=size/2;
+  const grooves=[.84,.72,.60,.48];
+  const labelR=Math.round(r*.32);
+  const spinStyle=spin?'animation:vinylSpin 3s linear infinite;':'';
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" style="${spinStyle}display:block;">
+    <circle cx="${r}" cy="${r}" r="${r-2}" fill="#1a1a1a" stroke="#241f1a" stroke-width="2"/>
+    ${grooves.map(f=>`<circle cx="${r}" cy="${r}" r="${Math.round(r*f)}" fill="none" stroke="rgba(90,79,68,.3)" stroke-width="1"/>`).join('')}
+    <circle cx="${r}" cy="${r}" r="${labelR}" fill="${labelColor}" stroke="#241f1a" stroke-width="1.5"/>
+    <circle cx="${r}" cy="${r}" r="5" fill="#faf5e8"/>
+  </svg>`;
+}
+
+function renderCollection() {
+  const allRecords=[];
+  history.forEach(hw=>{
+    if(!(hw.weekKey===weekKey&&hw.melodyId===activeMelodyId))
+      allRecords.push({...hw,isCurrent:false});
+  });
+  if(notes.length>0) allRecords.push({weekKey,notes,melodyId:activeMelodyId,isCurrent:true});
+  allRecords.reverse();
+  carouselRecords=allRecords;
+
+  const emptyEl=document.getElementById('emptyCollection');
+  const carouselEl=document.getElementById('vinylCarouselWrap');
+  if(allRecords.length===0){emptyEl.style.display='block';carouselEl.style.display='none';return;}
+  emptyEl.style.display='none';carouselEl.style.display='block';
+
+  if(carouselIndex>=allRecords.length) carouselIndex=0;
+  renderVinylCarousel();
+}
+
+function renderVinylCarousel() {
+  const records=carouselRecords;
+  if(!records.length) return;
+  const n=records.length;
+  const ci=((carouselIndex%n)+n)%n;
+  const prev=(ci-1+n)%n;
+  const next=(ci+1)%n;
+
+  const slots=['prevVinylSlot','curVinylSlot','nextVinylSlot'];
+  const idxs=[prev,ci,next];
+
+  idxs.forEach((ri,si)=>{
+    const rec=records[ri];
+    const m=MELODIES.find(x=>x.id===rec.melodyId)||MELODIES[0];
+    const color=LABEL_COLORS[ri%LABEL_COLORS.length];
+    const size=si===1?180:110;
+    const spin=si===1&&isCarouselPlaying;
+    document.getElementById(slots[si]).innerHTML=buildVinylSVG(size,color,spin);
+  });
+
+  // Info
+  const cur=records[ci];
+  const m=MELODIES.find(x=>x.id===cur.melodyId)||MELODIES[0];
+  const inProg=cur.isCurrent&&cur.notes.length<m.total;
+  const weekText=cur.isCurrent?'이번 주':weekKeyToLabel(cur.weekKey);
+  const label=inProg?`진행 중 · ${cur.notes.length} / ${m.total}`:`완성 · ${cur.notes.length}음`;
+  document.getElementById('vinylInfo').innerHTML=`
+    <div style="font-family:'Caveat',cursive;font-size:1.4rem;font-weight:700;margin-bottom:2px;">${weekText}</div>
+    <div style="font-size:.8rem;color:#9a8d80;">${m.emoji} ${m.name} · ${label}</div>
+    <div style="font-size:.7rem;color:#9a8d80;margin-top:2px;">${ci+1} / ${records.length}</div>
+  `;
+
+  // Playback
+  const pb=document.getElementById('vinylPlayback');
+  if(inProg){
+    pb.innerHTML='<span style="font-size:.8rem;color:#9a8d80;font-family:\'Caveat\',cursive;">진행 중인 멜로디예요</span>';
+  } else {
+    pb.innerHTML=`
+      <button id="vinylPlayBtn" style="display:flex;align-items:center;gap:6px;padding:.5rem 1.4rem;border-radius:99px;border:1.5px solid #241f1a;background:#fff;font-size:.85rem;font-weight:600;cursor:pointer;box-shadow:2px 2px 0 #241f1a;transition:all .12s;">
+        <span class="material-symbols-outlined" style="font-size:18px;">play_arrow</span> 듣기
+      </button>
+      <button id="vinylStopBtn" style="display:none;align-items:center;gap:6px;padding:.5rem 1.4rem;border-radius:99px;border:1.5px solid #ff7eb0;background:#fff3f7;color:#ff7eb0;font-size:.85rem;font-weight:600;cursor:pointer;box-shadow:2px 2px 0 rgba(255,126,176,.4);">
+        <span class="material-symbols-outlined" style="font-size:18px;">stop</span> 멈추기
+      </button>
+    `;
+    const playBtn=document.getElementById('vinylPlayBtn');
+    const stopBtn=document.getElementById('vinylStopBtn');
+    playBtn.addEventListener('click',()=>{
+      stopMelodyLoop();
+      isCarouselPlaying=true;
+      renderVinylCarousel();
+      startMelodyLoop(cur.notes,cur.melodyId);
+      playBtn.style.display='none';
+      stopBtn.style.display='flex';
+    });
+    stopBtn.addEventListener('click',()=>{
+      stopMelodyLoop();
+      isCarouselPlaying=false;
+      renderVinylCarousel();
+      stopBtn.style.display='none';
+      playBtn.style.display='flex';
+    });
+  }
+}
+
+let isCarouselPlaying=false;
+
+function renderMelodyCards() {
+  const cardsEl=document.getElementById('melodyCards');
+  cardsEl.innerHTML=MELODIES.map(m=>`
+    <div class="mel-card ${m.id===activeMelodyId?'active':''}" data-melody="${m.id}">
+      <span style="font-size:1.6rem;flex-shrink:0;">${m.emoji}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:'Caveat',cursive;font-size:1.05rem;font-weight:700;">${m.name}</div>
+        <div style="font-size:.72rem;color:#5a4f44;">${m.desc}</div>
+      </div>
+      ${m.id===activeMelodyId?'<span class="material-symbols-outlined" style="color:#241f1a;font-size:18px;">check_circle</span>':''}
+      <button class="melody-preview-btn" data-preview="${m.id}" style="display:flex;align-items:center;gap:3px;padding:.25rem .6rem;border-radius:99px;border:1px solid rgba(36,31,26,.25);background:rgba(255,255,255,.6);font-size:.72rem;cursor:pointer;flex-shrink:0;">
+        <span class="material-symbols-outlined" style="font-size:14px;">play_arrow</span>
+      </button>
+    </div>
+  `).join('');
+
+  cardsEl.querySelectorAll('.mel-card').forEach(card=>{
+    card.addEventListener('click',e=>{
+      if(e.target.closest('.melody-preview-btn')) return;
+      const mid=card.dataset.melody;
+      if(mid===activeMelodyId) return;
+      if(notes.length>0){
+        const ok=confirm(`멜로디를 바꾸면 이번 주 진행 중인 내용(${notes.length}음)이 보관함에 저장되고 새로 시작해요. 계속할까요?`);
+        if(!ok) return;
+        if(!history.find(h=>h.weekKey===weekKey&&h.melodyId===activeMelodyId))
+          history.push({weekKey,notes:[...notes],melodyId:activeMelodyId});
+      }
+      activeMelodyId=mid;notes=[];
+      saveState();
+      renderMelodyDots();renderPianoKeys();renderMelodyCards();updateWeekLabel();
+      lcdMelody.textContent=`MELODY · ${getActiveMelody().name}`;
+      showToast(`${getActiveMelody().name}으로 바꿨어요 ${getActiveMelody().emoji}`);
+    });
+  });
+
+  cardsEl.querySelectorAll('.melody-preview-btn').forEach(btn=>{
+    btn.addEventListener('click',e=>{
+      e.stopPropagation();
+      const mid=btn.dataset.preview;
+      const m=MELODIES.find(x=>x.id===mid);
+      if(!m||!soundOn){if(!soundOn)showToast('소리가 꺼져 있어요 🔇');return;}
+      stopMelodyLoop();
+      const ctx=getAudioCtx();
+      m.freqs.slice(0,5).forEach((freq,i)=>playNote(freq,ctx.currentTime+i*NOTE_STEP+0.05,NOTE_DUR,.2));
+    });
+  });
+}
+
+function renderStats() {
+  const m=getActiveMelody();
+  const completedWeeks=history.filter(h=>{
+    const hm=MELODIES.find(x=>x.id===h.melodyId)||MELODIES[0];
+    return h.notes.length>=hm.total;
+  }).length;
+  const completion=m.total>0?Math.round((notes.length/m.total)*100):0;
+  document.getElementById('statTotal').textContent=totalSessionsEver;
+  document.getElementById('statWeeks').textContent=completedWeeks;
+  document.getElementById('statThis').textContent=notes.length;
+  document.getElementById('statStreak').textContent=completion;
+}
+
+function updateWeekLabel() {
+  const days=['일','월','화','수','목','금','토'];
+  const m=getActiveMelody();
+  weekLabel.textContent=`${days[new Date().getDay()]}요일 · ${notes.length}/${m.total}`;
+  lcdMelody.textContent=`MELODY · ${m.name}`;
+  lcdUnlocked.textContent=`UNLOCKED · ${notes.length} OF ${m.total}`;
+}
+
+// ── Time Setup Faders ────────────────────────────────────────────────
+let setupMinVal=25, setupSecVal=0;
+const SEC_SNAPS=[0,15,30,45];
+
+function initFader(wrapId,fillId,thumbId,minV,maxV,initV,onChange) {
+  const wrap=document.getElementById(wrapId);
+  const fill=document.getElementById(fillId);
+  const thumb=document.getElementById(thumbId);
+  let val=initV;
+  function update(v) {
+    val=Math.max(minV,Math.min(maxV,v));
+    const frac=(val-minV)/(maxV-minV);
+    const h=wrap.offsetHeight||140;
+    const th=20;
+    const bottomPx=frac*(h-th);
+    thumb.style.bottom=bottomPx+'px';
+    fill.style.height=(frac*100)+'%';
+    onChange(val);
+  }
+  let dragging=false;
+  thumb.addEventListener('pointerdown',e=>{e.preventDefault();dragging=true;thumb.setPointerCapture(e.pointerId);});
+  thumb.addEventListener('pointermove',e=>{
+    if(!dragging) return;
+    const rect=wrap.getBoundingClientRect();
+    const y=e.clientY-rect.top;
+    const frac=1-Math.max(0,Math.min(1,y/rect.height));
+    const v=Math.round(minV+frac*(maxV-minV));
+    update(v);
+  });
+  thumb.addEventListener('pointerup',()=>{dragging=false;});
+  wrap.addEventListener('click',e=>{
+    if(e.target===thumb) return;
+    const rect=wrap.getBoundingClientRect();
+    const y=e.clientY-rect.top;
+    const frac=1-Math.max(0,Math.min(1,y/rect.height));
+    const v=Math.round(minV+frac*(maxV-minV));
+    update(v);
+  });
+  requestAnimationFrame(()=>requestAnimationFrame(()=>update(val)));
+  return {setValue:update,getValue:()=>val};
+}
+
+let minFader,secFaderInst;
+
+function openTimeSetModal() {
+  if(running) return;
+  const curMin=Math.floor(duration/60);
+  const curSec=duration%60;
+  setupMinVal=curMin;setupSecVal=curSec;
+  document.getElementById('timeSetDisplay').textContent=fmt(duration);
+  timeSetModal.classList.add('show');
+  // init faders after modal visible
+  requestAnimationFrame(()=>{
+    minFader=initFader('minFaderWrap','minFaderFill','minFaderThumb',0,90,setupMinVal,v=>{
+      setupMinVal=v;
+      document.getElementById('minDisplay').textContent=v;
+      document.getElementById('timeSetDisplay').textContent=fmt(setupMinVal*60+setupSecVal);
+    });
+    secFaderInst=initFader('secFaderWrap','secFaderFill','secFaderThumb',0,3,SEC_SNAPS.indexOf(setupSecVal)<0?0:SEC_SNAPS.indexOf(setupSecVal),v=>{
+      setupSecVal=SEC_SNAPS[Math.round(v)];
+      document.getElementById('secDisplay').textContent=String(setupSecVal).padStart(2,'0');
+      document.getElementById('timeSetDisplay').textContent=fmt(setupMinVal*60+setupSecVal);
+    });
+  });
+}
+
+document.getElementById('applyTimeBtn').addEventListener('click',()=>{
+  const newDur=setupMinVal*60+setupSecVal;
+  if(newDur<=0){showToast('최소 1분 이상 설정해주세요');return;}
+  duration=newDur;timeLeft=duration;
+  updateDisplays();updateTunerDial();
+  timeSetModal.classList.remove('show');
+  showToast(`⏱ ${setupMinVal}분 ${setupSecVal>0?setupSecVal+'초':''} 설정됐어요`);
+});
+
+document.getElementById('closeTimeSetBtn').addEventListener('click',()=>timeSetModal.classList.remove('show'));
+timeSetModal.addEventListener('click',e=>{if(e.target===timeSetModal)timeSetModal.classList.remove('show');});
+timeSetBtn.addEventListener('click',openTimeSetModal);
+
+// ── Nav ──────────────────────────────────────────────────────────────
+document.querySelectorAll('.nav-tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById(tab.dataset.view).classList.add('active');
+    if(tab.dataset.view==='collectionView'){isCarouselPlaying=false;renderCollection();}
+    if(tab.dataset.view==='settingsView'){renderMelodyCards();renderStats();}
+  });
+});
+
+// ── Events ───────────────────────────────────────────────────────────
+startBtn.addEventListener('click',startPause);
+resetBtn.addEventListener('click',resetTimer);
+abandonBtn.addEventListener('click',forceEndSession);
+stopMelodyBtn.addEventListener('click',()=>{stopMelodyLoop();stopMelodyBtn.style.display='none';});
+
+soundToggle.addEventListener('click',()=>{
+  soundOn=!soundOn;
+  soundToggle.classList.toggle('on',soundOn);
+  if(!soundOn){stopMelodyLoop();stopMelodyBtn.style.display='none';}
+  saveState();
+  showToast(soundOn?'소리 켜짐 🔊':'소리 꺼짐 🔇');
+});
+
+document.getElementById('nextSessionBtn').addEventListener('click',()=>hideSessionComplete(true));
+document.getElementById('closeCompleteBtn').addEventListener('click',()=>hideSessionComplete(false));
+
+document.getElementById('prevRecord').addEventListener('click',()=>{
+  if(!carouselRecords.length) return;
+  isCarouselPlaying=false;stopMelodyLoop();
+  carouselIndex=(carouselIndex-1+carouselRecords.length)%carouselRecords.length;
+  renderVinylCarousel();
+});
+document.getElementById('nextRecord').addEventListener('click',()=>{
+  if(!carouselRecords.length) return;
+  isCarouselPlaying=false;stopMelodyLoop();
+  carouselIndex=(carouselIndex+1)%carouselRecords.length;
+  renderVinylCarousel();
+});
+
+// Space key
+document.addEventListener('keydown',e=>{
+  if(e.code==='Space'&&e.target.tagName!=='BUTTON'&&e.target.tagName!=='INPUT'){
+    e.preventDefault();
+    if(document.getElementById('timerView').classList.contains('active')) startPause();
+  }
+  if(e.code==='ArrowLeft'&&document.getElementById('collectionView').classList.contains('active')){
+    if(!carouselRecords.length) return;
+    isCarouselPlaying=false;stopMelodyLoop();
+    carouselIndex=(carouselIndex-1+carouselRecords.length)%carouselRecords.length;
+    renderVinylCarousel();
+  }
+  if(e.code==='ArrowRight'&&document.getElementById('collectionView').classList.contains('active')){
+    if(!carouselRecords.length) return;
+    isCarouselPlaying=false;stopMelodyLoop();
+    carouselIndex=(carouselIndex+1)%carouselRecords.length;
+    renderVinylCarousel();
+  }
+});
+
+// ── Init ─────────────────────────────────────────────────────────────
+loadState();
+soundToggle.classList.toggle('on',soundOn);
+renderMelodyDots();
+renderPianoKeys();
+updateDisplays();
+updateTunerDial();
+updateWeekLabel();
+updateAbandonVisibility();
+setTimerStatus('READY');
+setInterval(updateWeekLabel,60_000);
+</script>
 </body>
 </html>
