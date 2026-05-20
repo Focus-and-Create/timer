@@ -493,7 +493,8 @@
         let running    = false;
         let intervalId = null;
         let looping    = false;
-        let loopTimeoutId = null;
+        let loopTimeoutId     = null;
+        let loopStartTimeoutId = null;
         let notes   = [];
         let weekKey = '';
         let audioCtx = null;
@@ -592,7 +593,14 @@
         function stopMelodyLoop() {
             looping = false;
             clearTimeout(loopTimeoutId);
+            clearTimeout(loopStartTimeoutId);
             loopTimeoutId = null;
+            loopStartTimeoutId = null;
+            // 이미 재생 중인 Web Audio 노드도 즉시 끊기
+            if (audioCtx) {
+                audioCtx.close();
+                audioCtx = null;
+            }
         }
 
         // ── Timer ──────────────────────────────────────────────────
@@ -662,7 +670,7 @@
                 spawnFloatingNote();
             }
             if (notes.length >= MELODY_FREQS.length) banner.classList.add('show');
-            setTimeout(() => startMelodyLoop(), 900);
+            loopStartTimeoutId = setTimeout(() => startMelodyLoop(), 900);
         }
 
         function spawnFloatingNote() {
