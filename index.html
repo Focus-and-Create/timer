@@ -56,7 +56,7 @@ body::before{
 #mainCard{
   background:var(--card);
   border-radius:50px;
-  width:100%;max-width:1100px;
+  width:100%;max-width:900px;
   overflow:visible;
   position:relative;
 }
@@ -75,10 +75,11 @@ body::before{
   padding:.35rem 1rem;border:2px solid var(--ink);border-radius:99px;
   background:rgba(255,255,255,.5);color:var(--ink-soft);font-size:.82rem;font-weight:700;
   cursor:pointer;transition:all .15s;font-family:'Noto Sans KR',sans-serif;
+  filter:url(#crayon-light);
 }
 .nav-tab:hover{background:rgba(255,255,255,.8)}
 .nav-tab.active{background:var(--ink);color:var(--bg)}
-.week-badge{font-size:.75rem;color:var(--ink-soft);display:flex;align-items:center;gap:.4rem;white-space:nowrap}
+.week-badge{font-size:.75rem;color:var(--ink-soft);display:flex;align-items:center;gap:.4rem;white-space:nowrap;filter:url(#crayon-light)}
 .week-dot{width:7px;height:7px;border-radius:50%;background:var(--pink);box-shadow:0 0 6px var(--pink);display:inline-block}
 /* Timer layout */
 #timerView{padding:20px;gap:20px}
@@ -132,7 +133,7 @@ body::before{
 }
 #melodyDots{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
 /* Piano keys */
-#pianoKeys{display:flex;border:3px solid var(--ink);border-radius:12px;overflow:hidden;height:90px;}
+#pianoKeys{display:flex;border:3px solid var(--ink);border-radius:12px;overflow:hidden;height:90px;filter:url(#crayon-light);}
 .piano-key{
   flex:1;position:relative;border-right:2px solid rgba(74,69,69,.25);
   display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
@@ -155,7 +156,7 @@ body::before{
   width:64px;height:64px;border-radius:50%;border:none;
   background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center;
   font-size:1.2rem;font-weight:700;transition:transform .12s;
-  flex-shrink:0;position:relative;
+  flex-shrink:0;position:relative;filter:url(#crayon-light);
 }
 .btn-round:hover{transform:scale(1.06)}
 .btn-round:active{transform:scale(.96)}
@@ -163,7 +164,7 @@ body::before{
   flex:1;height:64px;border-radius:99px;border:none;
   background:var(--nav-blue);cursor:pointer;display:flex;align-items:center;justify-content:center;
   gap:8px;font-size:1rem;font-weight:700;transition:transform .12s;
-  font-family:'Noto Sans KR',sans-serif;color:var(--ink);position:relative;
+  font-family:'Noto Sans KR',sans-serif;color:var(--ink);position:relative;filter:url(#crayon-light);
 }
 .btn-main:hover{transform:scale(1.03)}
 .btn-main:active{transform:scale(.97)}
@@ -173,10 +174,10 @@ body::before{
   display:none;align-items:center;gap:6px;padding:.45rem 1.2rem;border-radius:99px;
   border:2.5px solid #ff5a5a;background:rgba(255,90,90,.08);color:#ff5a5a;
   font-size:.82rem;font-weight:700;cursor:pointer;transition:all .12s;
-  font-family:'Noto Sans KR',sans-serif;
+  font-family:'Noto Sans KR',sans-serif;filter:url(#crayon-light);
 }
 .btn-abandon:hover{background:rgba(255,90,90,.15)}
-.shortcut-hint{font-size:.68rem;color:var(--muted);text-align:center;margin-top:2px}
+.shortcut-hint{font-size:.68rem;color:var(--muted);text-align:center;margin-top:2px;filter:url(#crayon-light)}
 kbd{display:inline-block;padding:1px 6px;border:1px solid var(--muted);border-radius:4px;font-size:.66rem;font-family:monospace}
 /* Stop melody btn */
 .btn-stop-melody{
@@ -357,7 +358,6 @@ kbd{display:inline-block;padding:1px 6px;border:1px solid var(--muted);border-ra
 
     <!-- Nav strip (inside card) -->
     <nav id="navStrip">
-      <div class="nav-logo">focus <span class="holo-text">melody</span></div>
       <div class="nav-tabs">
         <button class="nav-tab active" data-view="timerView">타이머</button>
         <button class="nav-tab" data-view="collectionView">컬렉션</button>
