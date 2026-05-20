@@ -139,15 +139,15 @@ body::before{
 }
 .piano-key:last-child{border-right:none}
 .piano-key.unlocked{
-  background:var(--holo);background-size:300% 100%;
-  animation:holoShift 5s linear infinite;cursor:pointer;
+  background:linear-gradient(to bottom,#e8d8ff 0%,#d4c0ff 100%);
+  cursor:pointer;
 }
-.piano-key.unlocked:hover{filter:brightness(1.1) saturate(1.1);transform:scaleY(1.06);transform-origin:bottom}
-.piano-key.unlocked:active{filter:brightness(.9)}
-.piano-key.unlocked.lit{filter:brightness(1.8) saturate(1.5)!important;transition:filter 0s!important}
-.piano-key.locked{opacity:.45}
-.key-note{font-family:'Caveat',cursive;font-size:.82rem;font-weight:700;color:var(--ink);line-height:1}
-.key-idx{font-size:.5rem;color:rgba(36,31,26,.4);font-family:monospace;line-height:1.5}
+.piano-key.unlocked:hover{filter:brightness(1.08);transform:scaleY(1.06);transform-origin:bottom}
+.piano-key.unlocked:active{filter:brightness(.92)}
+.piano-key.unlocked.lit{filter:brightness(1.5)!important;transition:filter 0s!important}
+.piano-key.locked{opacity:.4}
+.key-note{font-family:'Noto Sans KR','Caveat',sans-serif;font-size:.78rem;font-weight:700;color:var(--ink);line-height:1}
+.key-idx{font-size:.5rem;color:rgba(36,31,26,.4);font-family:'Noto Sans KR',monospace;line-height:1.5}
 /* Transport */
 .transport{display:flex;gap:12px;align-items:center}
 .btn-round{
@@ -273,6 +273,17 @@ kbd{display:inline-block;padding:1px 6px;border:1px solid var(--muted);border-ra
       <stop offset="66%" stop-color="#d6ffd9"/>
       <stop offset="100%" stop-color="#fff4c2"/>
     </linearGradient>
+    <!-- 색연필 질감: 미세 흔들림 + 소프트 블러 -->
+    <filter id="crayon" x="-4%" y="-4%" width="108%" height="108%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" seed="5" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.2" xChannelSelector="R" yChannelSelector="G" result="displaced"/>
+      <feGaussianBlur in="displaced" stdDeviation="0.45"/>
+    </filter>
+    <filter id="crayon-dial" x="-6%" y="-6%" width="112%" height="112%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.55" numOctaves="3" seed="9" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.8" xChannelSelector="R" yChannelSelector="G" result="displaced"/>
+      <feGaussianBlur in="displaced" stdDeviation="0.6"/>
+    </filter>
   </defs>
 </svg>
 
@@ -353,7 +364,7 @@ kbd{display:inline-block;padding:1px 6px;border:1px solid var(--muted);border-ra
 
         <!-- LEFT: Circular dial -->
         <div class="dial-area">
-          <svg id="dialSvg" viewBox="0 0 420 420" style="width:min(420px,42vw);height:min(420px,42vw);min-width:260px;">
+          <svg id="dialSvg" viewBox="0 0 420 420" style="width:min(420px,42vw);height:min(420px,42vw);min-width:260px;filter:url(#crayon-dial);">
             <!-- rough.js hand-drawn circles go here -->
             <g id="roughLayer"></g>
             <!-- Progress arc (fills clockwise from 12 o'clock) -->
@@ -638,7 +649,7 @@ function initRoughUI(){
   const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
   svg.id='roughOverlay';
   svg.setAttribute('aria-hidden','true');
-  svg.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:0';
+  svg.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:0;filter:url(#crayon)';
   card.insertBefore(svg,card.firstChild);
 
   // All card children except the SVG overlay sit above it
