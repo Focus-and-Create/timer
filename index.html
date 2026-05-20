@@ -11,8 +11,8 @@
   --bg:#fffaf5;
   --card:#edf6ff;
   --nav-blue:#d0e7ff;
-  --ink:#241f1a;
-  --ink-soft:#5a4f44;
+  --ink:#4a4545;
+  --ink-soft:#7a7470;
   --muted:#9a8d80;
   --pink:#ff7eb0;
   --mint:#7fe3c8;
@@ -30,7 +30,7 @@ body{
 }
 body::before{
   content:'';position:fixed;inset:0;pointer-events:none;
-  opacity:.15;background-image:radial-gradient(rgba(36,31,26,.2) 1px,transparent 1px);
+  opacity:.15;background-image:radial-gradient(rgba(74,69,69,.2) 1px,transparent 1px);
   background-size:22px 22px;mix-blend-mode:multiply;z-index:0;
 }
 @keyframes holoShift{from{background-position:0 0}to{background-position:300% 0}}
@@ -118,7 +118,7 @@ body::before{
 /* Melody dots */
 .mdot{
   width:16px;height:16px;border-radius:50%;
-  border:2.5px solid rgba(36,31,26,.2);background:rgba(36,31,26,.06);
+  border:2.5px solid rgba(74,69,69,.2);background:rgba(74,69,69,.06);
   flex-shrink:0;transition:all .3s;display:inline-block;
 }
 .mdot.filled{
@@ -134,7 +134,7 @@ body::before{
 /* Piano keys */
 #pianoKeys{display:flex;border:3px solid var(--ink);border-radius:12px;overflow:hidden;height:90px;}
 .piano-key{
-  flex:1;position:relative;border-right:2px solid rgba(36,31,26,.25);
+  flex:1;position:relative;border-right:2px solid rgba(74,69,69,.25);
   display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
   padding-bottom:6px;transition:all .12s;user-select:none;background:#f8f4ec;
 }
@@ -148,7 +148,7 @@ body::before{
 .piano-key.unlocked.lit{filter:brightness(1.5)!important;transition:filter 0s!important}
 .piano-key.locked{opacity:.4}
 .key-note{font-family:'Noto Sans KR','Caveat',sans-serif;font-size:.78rem;font-weight:700;color:var(--ink);line-height:1}
-.key-idx{font-size:.5rem;color:rgba(36,31,26,.4);font-family:'Noto Sans KR',monospace;line-height:1.5}
+.key-idx{font-size:.5rem;color:rgba(74,69,69,.4);font-family:'Noto Sans KR',monospace;line-height:1.5}
 /* Transport */
 .transport{display:flex;gap:12px;align-items:center}
 .btn-round{
@@ -211,7 +211,7 @@ kbd{display:inline-block;padding:1px 6px;border:1px solid var(--muted);border-ra
   display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;
 }
 #timeSetModal.show{opacity:1;pointer-events:auto}
-.fader-wrap{width:5px;position:relative;background:rgba(36,31,26,.2);border-radius:3px;cursor:pointer;flex-shrink:0}
+.fader-wrap{width:5px;position:relative;background:rgba(74,69,69,.2);border-radius:3px;cursor:pointer;flex-shrink:0}
 .fader-fill{position:absolute;bottom:0;left:0;width:100%;border-radius:3px;background:var(--lav)}
 .fader-thumb{
   position:absolute;left:50%;transform:translateX(-50%);width:44px;height:22px;
@@ -245,7 +245,7 @@ kbd{display:inline-block;padding:1px 6px;border:1px solid var(--muted);border-ra
 }
 .mel-card:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--ink)}
 .mel-card.active{background:var(--holo);background-size:300% 100%;animation:holoShift 5s linear infinite}
-.toggle-sw{width:46px;height:26px;border-radius:99px;border:2px solid var(--ink);background:rgba(36,31,26,.1);position:relative;cursor:pointer;transition:background .2s;flex-shrink:0}
+.toggle-sw{width:46px;height:26px;border-radius:99px;border:2px solid var(--ink);background:rgba(74,69,69,.1);position:relative;cursor:pointer;transition:background .2s;flex-shrink:0}
 .toggle-sw.on{background:var(--mint)}
 .toggle-sw::after{content:'';position:absolute;left:2px;top:2px;width:18px;height:18px;border-radius:50%;background:#fff;border:1.5px solid var(--ink);transition:transform .2s}
 .toggle-sw.on::after{transform:translateX(20px)}
@@ -377,23 +377,23 @@ kbd{display:inline-block;padding:1px 6px;border:1px solid var(--muted);border-ra
 
         <!-- LEFT: Circular dial -->
         <div class="dial-area">
-          <svg id="dialSvg" viewBox="0 0 420 420" style="width:min(420px,42vw);height:min(420px,42vw);min-width:260px;filter:url(#crayon-dial);">
+          <svg id="dialSvg" viewBox="0 0 420 420" style="width:min(420px,42vw);height:min(420px,42vw);min-width:260px;min-height:260px;display:block;aspect-ratio:1/1;filter:url(#crayon-dial);">
             <!-- rough.js hand-drawn circles go here -->
             <g id="roughLayer"></g>
             <!-- Progress arc (fills clockwise from 12 o'clock) -->
             <path id="dialProgress" d="" fill="url(#progressGrad)" opacity=".5"/>
             <!-- Tick marks: from inner circle boundary inward 47px (N/S/W/E) -->
             <!-- Inner circle r≈168, so boundary at 210±168=42 and 378 -->
-            <line x1="210" y1="42" x2="210" y2="89" stroke="#241f1a" stroke-width="3" stroke-linecap="round"/>
-            <line x1="210" y1="331" x2="210" y2="378" stroke="#241f1a" stroke-width="3" stroke-linecap="round"/>
-            <line x1="42" y1="210" x2="89" y2="210" stroke="#241f1a" stroke-width="3" stroke-linecap="round"/>
-            <line x1="331" y1="210" x2="378" y2="210" stroke="#241f1a" stroke-width="3" stroke-linecap="round"/>
+            <line x1="210" y1="42" x2="210" y2="89" stroke="#6a6565" stroke-width="3" stroke-linecap="round"/>
+            <line x1="210" y1="331" x2="210" y2="378" stroke="#6a6565" stroke-width="3" stroke-linecap="round"/>
+            <line x1="42" y1="210" x2="89" y2="210" stroke="#6a6565" stroke-width="3" stroke-linecap="round"/>
+            <line x1="331" y1="210" x2="378" y2="210" stroke="#6a6565" stroke-width="3" stroke-linecap="round"/>
             <!-- Center dot (lavender, 50px = r25) with border — Ellipse 3 -->
             <circle id="dialCenterDot" cx="210" cy="210" r="25"
-              fill="#c9b3ff" stroke="#241f1a" stroke-width="3.5"/>
+              fill="#c9b3ff" stroke="#6a6565" stroke-width="3.5"/>
             <!-- Pointer line -->
             <g id="dialPointer" style="transform-origin:210px 210px;">
-              <line x1="210" y1="210" x2="210" y2="50" stroke="#241f1a" stroke-width="3" stroke-linecap="round"/>
+              <line x1="210" y1="210" x2="210" y2="50" stroke="#6a6565" stroke-width="3" stroke-linecap="round"/>
             </g>
           </svg>
         </div>
@@ -663,16 +663,14 @@ function initRoughUI(){
   const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
   svg.id='roughOverlay';
   svg.setAttribute('aria-hidden','true');
-  svg.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:0;filter:url(#crayon)';
-  card.insertBefore(svg,card.firstChild);
+  svg.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:visible;z-index:2;filter:url(#crayon)';
+  card.appendChild(svg);
 
-  // All card children except the SVG overlay sit above it
-  Array.from(card.children).forEach(c=>{
-    if(c!==svg){c.style.position='relative';c.style.zIndex='1';}
-  });
+  // Card needs position:relative so absolute overlay is contained
+  card.style.position='relative';
 
   const rc=rough.svg(svg);
-  const ink='#332b25';
+  const ink='#6a6565';
 
   function rrp(x,y,w,h,r){
     r=Math.min(r,w/2,h/2);
@@ -734,16 +732,16 @@ function initRoughDial(){
   const layer=document.getElementById('roughLayer');
   if(!window.rough||!svg||!layer)return;
   const rc=rough.svg(svg);
-  const ink='#332b25';
+  const ink='#6a6565';
 
-  const FILL={roughness:0,stroke:'none',strokeWidth:0,bowing:0};
-  const STRK={roughness:1.3,fill:'none',bowing:0.5};
-  // Fills (clean, no stroke): outer blue then inner cream covers the center
-  layer.appendChild(rc.circle(210,210,396,{...FILL,fill:'#d0e7ff',fillStyle:'solid',seed:12}));
-  layer.appendChild(rc.circle(210,210,336,{...FILL,fill:'#fffaf5',fillStyle:'solid',seed:7}));
-  // Rough strokes drawn on top of fills
-  layer.appendChild(rc.circle(210,210,396,{...STRK,stroke:ink,strokeWidth:3,seed:12}));
-  layer.appendChild(rc.circle(210,210,336,{...STRK,stroke:ink,strokeWidth:2.5,seed:7}));
+  // Use same roughness+seed for fill and stroke so paths align perfectly
+  const SHARED={roughness:1.2,bowing:0.5};
+  // Fills first (stroke:none so only the fill shape renders)
+  layer.appendChild(rc.circle(210,210,396,{...SHARED,fill:'#d0e7ff',fillStyle:'solid',stroke:'none',strokeWidth:0,seed:12}));
+  layer.appendChild(rc.circle(210,210,336,{...SHARED,fill:'#fffaf5',fillStyle:'solid',stroke:'none',strokeWidth:0,seed:7}));
+  // Strokes on top (fill:none so only the border line renders, same path as above)
+  layer.appendChild(rc.circle(210,210,396,{...SHARED,fill:'none',stroke:ink,strokeWidth:3,seed:12}));
+  layer.appendChild(rc.circle(210,210,336,{...SHARED,fill:'none',stroke:ink,strokeWidth:2.5,seed:7}));
 }
 
 // ── Dial ─────────────────────────────────────────────────────────────
@@ -936,7 +934,7 @@ function renderPianoKeys(){
     if(unlocked)return`<button class="piano-key unlocked" data-index="${i}" title="${m.noteNames[i]}">
       <span class="key-note">${m.noteNames[i]}</span>
       <span class="key-idx">${i+1}</span></button>`;
-    return`<div class="piano-key locked"><span style="font-size:10px;color:rgba(36,31,26,.25);">🔒</span></div>`;
+    return`<div class="piano-key locked"><span style="font-size:10px;color:rgba(74,69,69,.25);">🔒</span></div>`;
   }).join('');
   pianoKeys.querySelectorAll('.piano-key.unlocked').forEach(key=>{
     key.addEventListener('click',()=>{
@@ -1016,7 +1014,7 @@ function renderMelodyCards(){
         <div style="font-size:.72rem;color:var(--ink-soft)">${m.desc}</div>
       </div>
       ${m.id===activeMelodyId?'<span style="font-size:1.2rem">✓</span>':''}
-      <button class="melody-preview-btn" data-preview="${m.id}" style="display:flex;align-items:center;padding:.25rem .6rem;border-radius:99px;border:1.5px solid rgba(36,31,26,.25);background:rgba(255,255,255,.7);font-size:.75rem;cursor:pointer;flex-shrink:0;">▶</button>
+      <button class="melody-preview-btn" data-preview="${m.id}" style="display:flex;align-items:center;padding:.25rem .6rem;border-radius:99px;border:1.5px solid rgba(74,69,69,.25);background:rgba(255,255,255,.7);font-size:.75rem;cursor:pointer;flex-shrink:0;">▶</button>
     </div>`).join('');
   cardsEl.querySelectorAll('.mel-card').forEach(card=>{
     card.addEventListener('click',e=>{
