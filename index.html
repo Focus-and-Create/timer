@@ -440,7 +440,7 @@
     <div class="controls">
         <button class="btn-ghost" id="resetBtn">리셋</button>
         <button class="btn-start" id="startBtn">▶</button>
-        <button class="btn-ghost" id="skipBtn">건너뛰기</button>
+        <button class="btn-ghost" id="stopMelodyBtn" style="display:none">■ 멈추기</button>
     </div>
 
     <section class="melody-section">
@@ -492,9 +492,8 @@
         let timeLeft   = duration;
         let running    = false;
         let intervalId = null;
-        let looping    = false;
-        let loopTimeoutId     = null;
-        let loopStartTimeoutId = null;
+        let loopGen    = 0;      // 세대 번호 — 올리면 모든 진행 중인 루프 무효화
+        let loopTimeoutId = null;
         let notes   = [];
         let weekKey = '';
         let audioCtx = null;
@@ -503,10 +502,10 @@
         const timerStatus  = document.getElementById('timerStatus');
         const timerRing    = document.getElementById('timerRing');
         const timerGlow    = document.getElementById('timerGlow');
-        const startBtn     = document.getElementById('startBtn');
-        const resetBtn     = document.getElementById('resetBtn');
-        const skipBtn      = document.getElementById('skipBtn');
-        const playBtn      = document.getElementById('playBtn');
+        const startBtn      = document.getElementById('startBtn');
+        const resetBtn      = document.getElementById('resetBtn');
+        const stopMelodyBtn = document.getElementById('stopMelodyBtn');
+        const playBtn       = document.getElementById('playBtn');
         const notesGrid    = document.getElementById('notesGrid');
         const noteCount    = document.getElementById('noteCount');
         const progressFill = document.getElementById('progressFill');
@@ -574,30 +573,28 @@
             });
         }
 
-        // ── Melody loop — recursive setTimeout so timing never drifts ──
+        // ── Melody loop ────────────────────────────────────────────
         function melodyDurationMs() {
             return ((notes.length - 1) * NOTE_STEP + NOTE_DUR + 1.2) * 1000;
         }
 
         function startMelodyLoop() {
             if (!notes.length) return;
-            looping = true;
+            const myGen = ++loopGen; // 이 루프만의 세대 번호
+
             function playOnce() {
-                if (!looping) return;
+                if (myGen !== loopGen) return; // 무효화됐으면 즉시 종료
                 playMelody(i => highlightChip(i));
                 loopTimeoutId = setTimeout(playOnce, melodyDurationMs());
             }
-            playOnce();
+            loopTimeoutId = setTimeout(playOnce, 900);
         }
 
         function stopMelodyLoop() {
-            looping = false;
+            loopGen++;                     // 모든 진행 중인 루프 무효화
             clearTimeout(loopTimeoutId);
-            clearTimeout(loopStartTimeoutId);
             loopTimeoutId = null;
-            loopStartTimeoutId = null;
-            // 이미 재생 중인 Web Audio 노드도 즉시 끊기
-            if (audioCtx) {
+            if (audioCtx) {               // 재생 중인 오디오 즉시 종료
                 audioCtx.close();
                 audioCtx = null;
             }
@@ -650,6 +647,7 @@
         function resetTimer() {
             clearInterval(intervalId);
             stopMelodyLoop();
+            stopMelodyBtn.style.display = 'none';
             running = false;
             timeLeft = duration;
             timerDisplay.textContent = fmt(timeLeft);
@@ -670,7 +668,8 @@
                 spawnFloatingNote();
             }
             if (notes.length >= MELODY_FREQS.length) banner.classList.add('show');
-            loopStartTimeoutId = setTimeout(() => startMelodyLoop(), 900);
+            stopMelodyBtn.style.display = '';
+            startMelodyLoop();
         }
 
         function spawnFloatingNote() {
@@ -717,19 +716,15 @@
         }
 
         // ── Events ─────────────────────────────────────────────────
-        startBtn.addEventListener('click', startPause);
+        startBtn.addEventListener('click', () => {
+            stopMelodyLoop();
+            stopMelodyBtn.style.display = 'none';
+            startPause();
+        });
         resetBtn.addEventListener('click', resetTimer);
-
-        skipBtn.addEventListener('click', () => {
-            clearInterval(intervalId);
-            running = false;
-            timeLeft = 0;
-            timerDisplay.textContent = fmt(0);
-            setRing(0);
-            startBtn.textContent = '▶';
-            startBtn.classList.remove('running');
-            timerStatus.textContent = '완료!';
-            onComplete();
+        stopMelodyBtn.addEventListener('click', () => {
+            stopMelodyLoop();
+            stopMelodyBtn.style.display = 'none';
         });
 
         playBtn.addEventListener('click', () => {
