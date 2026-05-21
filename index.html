@@ -73,8 +73,8 @@ body::before{
 .nav-tabs{display:flex;gap:6px}
 .nav-tab{
   padding:.35rem 1rem;border:2px solid var(--ink);border-radius:99px;
-  background:rgba(255,255,255,.5);color:var(--ink-soft);font-size:.82rem;font-weight:700;
-  cursor:pointer;transition:all .15s;font-family:'Noto Sans KR',sans-serif;
+  background:rgba(255,255,255,.5);color:var(--ink-soft);font-size:.88rem;font-weight:700;
+  cursor:pointer;transition:all .15s;font-family:'Caveat',cursive;
   filter:url(#crayon-light);
 }
 .nav-tab:hover{background:rgba(255,255,255,.8)}
@@ -124,42 +124,26 @@ body::before{
   padding:16px 20px;display:flex;flex-direction:column;justify-content:center;gap:4px;
 }
 .lcd-time{
-  font-family:'Caveat',cursive;font-size:2.8rem;
+  font-family:'Caveat',cursive;font-size:3.1rem;
   color:var(--ink);letter-spacing:0;line-height:1;
   filter:url(#crayon-light);
 }
-.lcd-sub{font-family:'Caveat',cursive;font-size:.82rem;color:var(--muted);letter-spacing:.02em;line-height:1.4;filter:url(#crayon-light)}
+.lcd-sub{font-family:'Caveat',cursive;font-size:.9rem;color:var(--muted);letter-spacing:.02em;line-height:1.4;filter:url(#crayon-light)}
 .session-box{
   flex:1;background:var(--bg);border-radius:25px;
   padding:16px 20px;display:flex;flex-direction:column;justify-content:center;gap:4px;
 }
-.session-label{font-size:.8rem;color:var(--muted);font-weight:500;filter:url(#crayon-light)}
-.session-num{font-family:'Caveat',cursive;font-size:2.2rem;color:var(--ink);line-height:1;filter:url(#crayon-light)}
+.session-label{font-size:.88rem;color:var(--muted);font-weight:500;filter:url(#crayon-light)}
+.session-num{font-family:'Caveat',cursive;font-size:2.6rem;color:var(--ink);line-height:1;filter:url(#crayon-light)}
 /* Melody track box */
 .melody-box{
   background:var(--bg);border-radius:25px;
   padding:14px 16px;
 }
 .melody-box-label{
-  font-family:'Caveat',cursive;font-size:.85rem;color:var(--muted);
+  font-family:'Caveat',cursive;font-size:.95rem;color:var(--muted);
   letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;filter:url(#crayon-light);
 }
-/* Melody dots */
-.mdot{
-  width:16px;height:16px;border-radius:50%;
-  border:2.5px solid rgba(74,69,69,.2);background:rgba(74,69,69,.06);
-  flex-shrink:0;transition:all .3s;display:inline-block;
-}
-.mdot.filled{
-  background:var(--lav);border-color:var(--ink);
-  box-shadow:0 0 8px rgba(201,179,255,.6);
-}
-.mdot.new-dot{
-  background:var(--holo-strong);background-size:300% 100%;
-  animation:holoShift 2s linear infinite,slotPulse 1s ease-in-out infinite;
-  border-color:transparent;
-}
-#melodyDots{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
 /* Piano keys */
 #pianoKeys{display:flex;border:3px solid var(--ink);border-radius:12px;overflow:hidden;height:90px;filter:url(#crayon-light);}
 .piano-key{
@@ -176,8 +160,8 @@ body::before{
 .piano-key.unlocked:active{filter:brightness(.92)}
 .piano-key.unlocked.lit{filter:brightness(1.5)!important;transition:filter 0s!important}
 .piano-key.locked{opacity:.4}
-.key-note{font-family:'Noto Sans KR','Caveat',sans-serif;font-size:.78rem;font-weight:700;color:var(--ink);line-height:1}
-.key-idx{font-size:.5rem;color:rgba(74,69,69,.4);font-family:'Noto Sans KR',monospace;line-height:1.5}
+.key-note{font-family:'Caveat','Noto Sans KR',sans-serif;font-size:.85rem;font-weight:700;color:var(--ink);line-height:1}
+.key-idx{font-size:.58rem;color:rgba(74,69,69,.4);font-family:'Caveat',monospace;line-height:1.5}
 /* Transport */
 .transport{display:flex;gap:12px;align-items:center}
 .btn-round{
@@ -191,19 +175,21 @@ body::before{
 .btn-main{
   flex:1;height:64px;border-radius:99px;border:none;
   background:var(--nav-blue);cursor:pointer;display:flex;align-items:center;justify-content:center;
-  gap:8px;font-size:1rem;font-weight:700;transition:transform .12s;
-  font-family:'Noto Sans KR',sans-serif;color:var(--ink);position:relative;filter:url(#crayon-light);
+  gap:8px;font-size:1.05rem;font-weight:700;transition:transform .12s;
+  font-family:'Caveat',cursive;color:var(--ink);position:relative;filter:url(#crayon-light);
 }
 .btn-main:hover{transform:scale(1.03)}
 .btn-main:active{transform:scale(.97)}
 .btn-main.running{background:var(--mint)}
 .btn-abandon-row{display:flex;justify-content:center;margin-top:-4px}
 .btn-abandon{
-  display:none;align-items:center;gap:6px;padding:.45rem 1.2rem;border-radius:99px;
+  display:inline-flex;align-items:center;gap:6px;padding:.45rem 1.2rem;border-radius:99px;
   border:2.5px solid #ff5a5a;background:rgba(255,90,90,.08);color:#ff5a5a;
-  font-size:.82rem;font-weight:700;cursor:pointer;transition:all .12s;
+  font-size:.82rem;font-weight:700;cursor:pointer;transition:opacity .15s;
   font-family:'Noto Sans KR',sans-serif;filter:url(#crayon-light);
+  opacity:0;pointer-events:none;
 }
+.btn-abandon.visible{opacity:1;pointer-events:auto;}
 .btn-abandon:hover{background:rgba(255,90,90,.15)}
 .shortcut-hint{font-size:.68rem;color:var(--muted);text-align:center;margin-top:2px;filter:url(#crayon-light)}
 kbd{display:inline-block;padding:1px 6px;border:1px solid var(--muted);border-radius:4px;font-size:.66rem;font-family:monospace}
@@ -385,8 +371,8 @@ kbd{display:inline-block;padding:1px 6px;border:1px solid var(--muted);border-ra
       <div class="week-badge" style="align-items:center;">
         <span class="week-dot"></span>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px;">
-          <span id="navSongLabel" style="font-family:'Caveat',cursive;font-size:.82rem;font-weight:700;color:var(--ink);line-height:1.2;">Ode to Joy</span>
-          <span id="weekLabel" style="font-size:.68rem;color:var(--ink-soft);line-height:1.2;">Thu · 0/14</span>
+          <span id="navSongLabel" style="font-family:'Caveat',cursive;font-size:.9rem;font-weight:700;color:var(--ink);line-height:1.2;">Ode to Joy</span>
+          <span id="weekLabel" style="font-size:.73rem;color:var(--ink-soft);line-height:1.2;">Thu · 0/14</span>
         </div>
       </div>
     </nav>
@@ -399,7 +385,7 @@ kbd{display:inline-block;padding:1px 6px;border:1px solid var(--muted);border-ra
 
         <!-- LEFT: Circular dial -->
         <div class="dial-area">
-          <svg id="dialSvg" viewBox="0 0 420 420" style="width:min(420px,42vw);height:min(420px,42vw);min-width:260px;min-height:260px;display:block;aspect-ratio:1/1;filter:url(#crayon-dial);">
+          <svg id="dialSvg" viewBox="0 0 420 420" style="width:min(460px,46vw);height:min(460px,46vw);min-width:280px;min-height:280px;display:block;aspect-ratio:1/1;filter:url(#crayon-dial);">
             <!-- rough.js: outer fill, cream area, border strokes -->
             <g id="roughLayer"></g>
             <!-- Faint concentric rings inside cream zone -->
@@ -447,7 +433,6 @@ kbd{display:inline-block;padding:1px 6px;border:1px solid var(--muted);border-ra
           <!-- Melody track -->
           <div class="melody-box">
             <div class="melody-box-label">Melody Track</div>
-            <div id="melodyDots"></div>
             <div id="pianoKeys"></div>
           </div>
 
@@ -603,7 +588,6 @@ const navSongLabel=document.getElementById('navSongLabel');
 const lcdStatus=document.getElementById('lcdStatus');
 const lcdProgress=document.getElementById('lcdProgress');
 const sessionCount=document.getElementById('sessionCount');
-const melodyDots=document.getElementById('melodyDots');
 const pianoKeys=document.getElementById('pianoKeys');
 const flash=document.getElementById('flash');
 const weekLabel=document.getElementById('weekLabel');
@@ -785,14 +769,22 @@ function initRoughDial(){
   const rc=rough.svg(svg);
   const ink='#6a6565';
   const SHARED={roughness:1.2,bowing:0.5};
+  const ns='http://www.w3.org/2000/svg';
 
-  // Outer blue ring
-  layer.appendChild(rc.circle(210,210,396,{...SHARED,fill:'#d0e7ff',fillStyle:'solid',stroke:'none',strokeWidth:0,seed:12}));
-  // Cream inner area
-  layer.appendChild(rc.circle(210,210,336,{...SHARED,fill:'#f5f0e8',fillStyle:'solid',stroke:'none',strokeWidth:0,seed:7}));
-  // Border strokes (same seed as fills → paths align)
+  // Plain SVG circles for fills — guaranteed perfect circles, no roughjs distortion
+  const outerFill=document.createElementNS(ns,'circle');
+  outerFill.setAttribute('cx','210');outerFill.setAttribute('cy','210');
+  outerFill.setAttribute('r','198');outerFill.setAttribute('fill','#d0e7ff');
+  layer.appendChild(outerFill);
+
+  const innerFill=document.createElementNS(ns,'circle');
+  innerFill.setAttribute('cx','210');innerFill.setAttribute('cy','210');
+  innerFill.setAttribute('r','167');innerFill.setAttribute('fill','#f5f0e8');
+  layer.appendChild(innerFill);
+
+  // Rough.js strokes only — wobbly crayon border on top of the round fills
   layer.appendChild(rc.circle(210,210,396,{...SHARED,fill:'none',stroke:ink,strokeWidth:3,seed:12}));
-  layer.appendChild(rc.circle(210,210,336,{...SHARED,fill:'none',stroke:ink,strokeWidth:2.5,seed:7}));
+  layer.appendChild(rc.circle(210,210,334,{...SHARED,fill:'none',stroke:ink,strokeWidth:2.5,seed:7}));
 }
 
 // ── Dial ─────────────────────────────────────────────────────────────
@@ -887,7 +879,7 @@ function forceEndSession(){
 }
 
 function updateAbandonVisibility(){
-  abandonBtn.style.display=sessionStarted?'inline-flex':'none';
+  abandonBtn.classList.toggle('visible',sessionStarted);
 }
 
 // ── Session Complete ─────────────────────────────────────────────────
@@ -973,13 +965,7 @@ function showToast(msg,ms=2800){
 }
 
 // ── Render ───────────────────────────────────────────────────────────
-function renderMelodyDots(){
-  const m=getActiveMelody();
-  melodyDots.innerHTML=Array.from({length:m.total},(_,i)=>{
-    const cls=i<notes.length?'filled':'';
-    return`<div class="mdot ${cls}" title="${m.noteNames[i]}"></div>`;
-  }).join('');
-}
+function renderMelodyDots(){}
 
 function renderPianoKeys(){
   const m=getActiveMelody();
