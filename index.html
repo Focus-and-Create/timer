@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Focus Melody</title>
-<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Major+Mono+Display&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/roughjs@4.6.6/bundled/rough.js"></script>
 <style>
 :root{
@@ -124,26 +124,25 @@ body::before{
   padding:16px 20px;display:flex;flex-direction:column;justify-content:center;gap:4px;
 }
 .lcd-time{
-  font-family:'Major Mono Display',monospace;font-size:2.6rem;
-  color:var(--ink);letter-spacing:-2px;line-height:1;
+  font-family:'Caveat',cursive;font-size:2.8rem;
+  color:var(--ink);letter-spacing:0;line-height:1;
   filter:url(#crayon-light);
 }
-.lcd-label{font-family:'Major Mono Display',monospace;font-size:.75rem;color:var(--ink-soft);letter-spacing:.08em;line-height:1.5;filter:url(#crayon-light)}
-.lcd-sub{font-family:'Major Mono Display',monospace;font-size:.7rem;color:var(--muted);letter-spacing:.06em;line-height:1.4;filter:url(#crayon-light)}
+.lcd-sub{font-family:'Caveat',cursive;font-size:.82rem;color:var(--muted);letter-spacing:.02em;line-height:1.4;filter:url(#crayon-light)}
 .session-box{
   flex:1;background:var(--bg);border-radius:25px;
   padding:16px 20px;display:flex;flex-direction:column;justify-content:center;gap:4px;
 }
 .session-label{font-size:.8rem;color:var(--muted);font-weight:500;filter:url(#crayon-light)}
-.session-num{font-family:'Major Mono Display',monospace;font-size:2rem;color:var(--ink);line-height:1;filter:url(#crayon-light)}
+.session-num{font-family:'Caveat',cursive;font-size:2.2rem;color:var(--ink);line-height:1;filter:url(#crayon-light)}
 /* Melody track box */
 .melody-box{
   background:var(--bg);border-radius:25px;
   padding:14px 16px;
 }
 .melody-box-label{
-  font-family:'Major Mono Display',monospace;font-size:.75rem;color:var(--muted);
-  letter-spacing:.18em;text-transform:uppercase;margin-bottom:10px;filter:url(#crayon-light);
+  font-family:'Caveat',cursive;font-size:.85rem;color:var(--muted);
+  letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;filter:url(#crayon-light);
 }
 /* Melody dots */
 .mdot{
@@ -355,14 +354,14 @@ kbd{display:inline-block;padding:1px 6px;border:1px solid var(--muted);border-ra
     <div style="font-family:'Caveat',cursive;font-size:1.8rem;font-weight:700;margin-bottom:20px;">Timer Setup</div>
     <div style="display:flex;gap:10px;align-items:flex-end;justify-content:center;margin-bottom:28px;">
       <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-        <label for="minInput" style="font-family:'Major Mono Display',monospace;font-size:.68rem;color:var(--muted);letter-spacing:.12em;">MIN</label>
+        <label for="minInput" style="font-family:'Caveat',cursive;font-size:.68rem;color:var(--muted);letter-spacing:.12em;">MIN</label>
         <input id="minInput" type="number" min="0" max="90" value="25"
           style="width:100px;text-align:center;font-family:'Caveat',cursive;font-size:2.8rem;font-weight:700;border:none;border-bottom:3px solid var(--ink);background:transparent;outline:none;color:var(--ink);padding:4px 0;">
         <span style="font-size:.65rem;color:var(--muted);">0 – 90</span>
       </div>
       <div style="font-family:'Caveat',cursive;font-size:2.8rem;font-weight:700;padding-bottom:28px;color:var(--ink);">:</div>
       <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-        <label for="secInput" style="font-family:'Major Mono Display',monospace;font-size:.68rem;color:var(--muted);letter-spacing:.12em;">SEC</label>
+        <label for="secInput" style="font-family:'Caveat',cursive;font-size:.68rem;color:var(--muted);letter-spacing:.12em;">SEC</label>
         <input id="secInput" type="number" min="0" max="59" value="0"
           style="width:100px;text-align:center;font-family:'Caveat',cursive;font-size:2.8rem;font-weight:700;border:none;border-bottom:3px solid var(--ink);background:transparent;outline:none;color:var(--ink);padding:4px 0;">
         <span style="font-size:.65rem;color:var(--muted);">0 – 59</span>
@@ -383,9 +382,12 @@ kbd{display:inline-block;padding:1px 6px;border:1px solid var(--muted);border-ra
         <button class="nav-tab" data-view="collectionView">Collection</button>
         <button class="nav-tab" data-view="settingsView">Settings</button>
       </div>
-      <div class="week-badge">
+      <div class="week-badge" style="align-items:center;">
         <span class="week-dot"></span>
-        <span id="weekLabel">이번 주</span>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:1px;">
+          <span id="navSongLabel" style="font-family:'Caveat',cursive;font-size:.82rem;font-weight:700;color:var(--ink);line-height:1.2;">Ode to Joy</span>
+          <span id="weekLabel" style="font-size:.68rem;color:var(--ink-soft);line-height:1.2;">Thu · 0/14</span>
+        </div>
       </div>
     </nav>
 
@@ -398,9 +400,16 @@ kbd{display:inline-block;padding:1px 6px;border:1px solid var(--muted);border-ra
         <!-- LEFT: Circular dial -->
         <div class="dial-area">
           <svg id="dialSvg" viewBox="0 0 420 420" style="width:min(420px,42vw);height:min(420px,42vw);min-width:260px;min-height:260px;display:block;aspect-ratio:1/1;filter:url(#crayon-dial);">
-            <!-- rough.js: outer vinyl fill, cream area, groove rings, border strokes -->
+            <!-- rough.js: outer fill, cream area, border strokes -->
             <g id="roughLayer"></g>
-            <!-- Progress arc inside the cream zone (r=150, pie from center) -->
+            <!-- Faint concentric rings inside cream zone -->
+            <circle cx="210" cy="210" r="45"  fill="none" stroke="rgba(106,101,101,.10)" stroke-width="1"/>
+            <circle cx="210" cy="210" r="85"  fill="none" stroke="rgba(106,101,101,.10)" stroke-width="1"/>
+            <circle cx="210" cy="210" r="122" fill="none" stroke="rgba(106,101,101,.10)" stroke-width="1"/>
+            <circle cx="210" cy="210" r="158" fill="none" stroke="rgba(106,101,101,.07)" stroke-width="1"/>
+            <!-- Time-darkening overlay (opacity updated by JS) -->
+            <circle id="dialDarkOverlay" cx="210" cy="210" r="166" fill="#3d2a14" opacity="0"/>
+            <!-- Progress arc inside the cream zone -->
             <path id="dialProgress" d="" fill="url(#progressGrad)" opacity=".55"/>
             <!-- Tick marks inside cream zone -->
             <line x1="210" y1="42" x2="210" y2="82" stroke="#6a6565" stroke-width="2.5" stroke-linecap="round"/>
@@ -424,8 +433,7 @@ kbd{display:inline-block;padding:1px 6px;border:1px solid var(--muted);border-ra
 
           <!-- Info row: LCD timer + session count -->
           <div class="info-row">
-            <div class="lcd-box" style="flex:0 0 auto;min-width:200px;">
-              <div class="lcd-label" id="lcdMelody">MELODY · Ode to Joy</div>
+            <div class="lcd-box" style="flex:0 0 auto;min-width:180px;">
               <div class="lcd-time" id="lcdTime">25:00</div>
               <div class="lcd-sub" id="lcdStatus">● READY</div>
             </div>
@@ -591,7 +599,7 @@ const timeSetBtn=document.getElementById('timeSetBtn');
 const dialProgress=document.getElementById('dialProgress');
 const dialPointer=document.getElementById('dialPointer');
 const lcdTime=document.getElementById('lcdTime');
-const lcdMelody=document.getElementById('lcdMelody');
+const navSongLabel=document.getElementById('navSongLabel');
 const lcdStatus=document.getElementById('lcdStatus');
 const lcdProgress=document.getElementById('lcdProgress');
 const sessionCount=document.getElementById('sessionCount');
@@ -778,25 +786,24 @@ function initRoughDial(){
   const ink='#6a6565';
   const SHARED={roughness:1.2,bowing:0.5};
 
-  // Outer vinyl ring (dark, like a record)
-  layer.appendChild(rc.circle(210,210,396,{...SHARED,fill:'#28231f',fillStyle:'solid',stroke:'none',strokeWidth:0,seed:12}));
-  // Cream inner area (the visible part of the record under the label)
+  // Outer blue ring
+  layer.appendChild(rc.circle(210,210,396,{...SHARED,fill:'#d0e7ff',fillStyle:'solid',stroke:'none',strokeWidth:0,seed:12}));
+  // Cream inner area
   layer.appendChild(rc.circle(210,210,336,{...SHARED,fill:'#f5f0e8',fillStyle:'solid',stroke:'none',strokeWidth:0,seed:7}));
-  // Groove rings in the dark outer zone (subtle white rings)
-  [386,373,360,347].forEach((d,i)=>{
-    layer.appendChild(rc.circle(210,210,d,{roughness:0.5,bowing:0.2,fill:'none',stroke:'rgba(255,255,255,0.09)',strokeWidth:1,seed:30+i}));
-  });
   // Border strokes (same seed as fills → paths align)
   layer.appendChild(rc.circle(210,210,396,{...SHARED,fill:'none',stroke:ink,strokeWidth:3,seed:12}));
   layer.appendChild(rc.circle(210,210,336,{...SHARED,fill:'none',stroke:ink,strokeWidth:2.5,seed:7}));
 }
 
 // ── Dial ─────────────────────────────────────────────────────────────
+const dialDarkOverlay=document.getElementById('dialDarkOverlay');
 function updateDial(){
   const elapsed=duration-timeLeft;
   const frac=elapsed/duration;
   // Rotate pointer
   dialPointer.style.transform=`rotate(${frac*360}deg)`;
+  // Darken inner zone progressively
+  if(dialDarkOverlay) dialDarkOverlay.setAttribute('opacity',(frac*0.38).toFixed(3));
   // Progress arc
   const cx=210,cy=210,r=158;
   if(frac<=0){dialProgress.setAttribute('d','');return;}
@@ -1075,7 +1082,7 @@ function renderMelodyCards(){
       }
       activeMelodyId=mid;notes=[];completeBanner.classList.remove('show');
       saveState();renderMelodyDots();renderPianoKeys();renderMelodyCards();updateWeekLabel();
-      lcdMelody.textContent=`MELODY · ${getActiveMelody().name}`;
+      if(navSongLabel)navSongLabel.textContent=getActiveMelody().name;
       showToast(`Switched to ${getActiveMelody().name} ${getActiveMelody().emoji}`);
     });
   });
@@ -1102,7 +1109,7 @@ function renderStats(){
 function updateWeekLabel(){
   const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],m=getActiveMelody();
   weekLabel.textContent=`${days[new Date().getDay()]} · ${notes.length}/${m.total}`;
-  lcdMelody.textContent=`MELODY · ${m.name}`;
+  if(navSongLabel)navSongLabel.textContent=m.name;
   lcdProgress.textContent=`${notes.length} / ${m.total}`;
 }
 
