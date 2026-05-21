@@ -404,12 +404,11 @@ kbd{display:inline-block;padding:1px 6px;border:1px solid var(--muted);border-ra
             <line x1="338" y1="210" x2="378" y2="210" stroke="#6a6565" stroke-width="2.5" stroke-linecap="round"/>
             <!-- Label sticker (on top of progress arc) -->
             <circle id="dialLabel" cx="210" cy="210" r="68" fill="#c9b3ff" stroke="#6a6565" stroke-width="2"/>
-            <!-- Center hole -->
-            <circle cx="210" cy="210" r="9" fill="#fffaf5" stroke="rgba(106,101,101,.5)" stroke-width="1.5"/>
-            <!-- Tonearm / pointer — white to show on dark vinyl, clipped to label area -->
+            <!-- Melody name inside label -->
+            <text id="dialLabelText" text-anchor="middle" font-family="Caveat, cursive" font-size="15" font-weight="700" fill="#4a4545" style="pointer-events:none;"></text>
+            <!-- Pointer — only in cream zone, rotates as timer runs -->
             <g id="dialPointer" style="transform-origin:210px 210px;">
-              <line x1="210" y1="142" x2="210" y2="50" stroke="rgba(255,255,255,.75)" stroke-width="2.5" stroke-linecap="round"/>
-              <line x1="210" y1="210" x2="210" y2="142" stroke="#6a6565" stroke-width="2.5" stroke-linecap="round"/>
+              <line x1="210" y1="144" x2="210" y2="54" stroke="#6a6565" stroke-width="2.5" stroke-linecap="round"/>
             </g>
           </svg>
         </div>
@@ -768,10 +767,10 @@ function initRoughDial(){
   if(!window.rough||!svg||!layer)return;
   const rc=rough.svg(svg);
   const ink='#6a6565';
-  const SHARED={roughness:1.0,bowing:0.4};
+  const SHARED={roughness:0.4,bowing:0.3};
   const ns='http://www.w3.org/2000/svg';
 
-  // Perfect SVG circle fills — no filter applied so they stay truly round
+  // Perfect SVG circle fills — no filter so they stay truly round
   const outerFill=document.createElementNS(ns,'circle');
   outerFill.setAttribute('cx','210');outerFill.setAttribute('cy','210');
   outerFill.setAttribute('r','194');outerFill.setAttribute('fill','#d0e7ff');
@@ -782,13 +781,13 @@ function initRoughDial(){
   innerFill.setAttribute('r','162');innerFill.setAttribute('fill','#f5f0e8');
   layer.appendChild(innerFill);
 
-  // Rough.js stroke borders — filter applied only to the stroke paths, not the fills
-  const outerStroke=rc.circle(210,210,396,{...SHARED,fill:'none',stroke:ink,strokeWidth:3,seed:12});
-  outerStroke.setAttribute('filter','url(#crayon-light)');
+  // Rough.js strokes — crayon filter on strokes only, not fills
+  const outerStroke=rc.circle(210,210,396,{...SHARED,fill:'none',stroke:ink,strokeWidth:3.5,seed:12});
+  outerStroke.setAttribute('filter','url(#crayon)');
   layer.appendChild(outerStroke);
 
-  const innerStroke=rc.circle(210,210,332,{...SHARED,fill:'none',stroke:ink,strokeWidth:2.5,seed:7});
-  innerStroke.setAttribute('filter','url(#crayon-light)');
+  const innerStroke=rc.circle(210,210,332,{...SHARED,fill:'none',stroke:ink,strokeWidth:3,seed:7});
+  innerStroke.setAttribute('filter','url(#crayon)');
   layer.appendChild(innerStroke);
 }
 
@@ -1097,11 +1096,27 @@ function renderStats(){
   document.getElementById('statStreak').textContent=m.total>0?Math.round((notes.length/m.total)*100):0;
 }
 
+function updateDialLabel(){
+  const el=document.getElementById('dialLabelText');
+  if(!el)return;
+  const name=getActiveMelody().name;
+  const words=name.split(' ');
+  if(words.length<=1){
+    el.innerHTML=`<tspan x="210" y="215">${name}</tspan>`;
+  }else{
+    const mid=Math.ceil(words.length/2);
+    const l1=words.slice(0,mid).join(' ');
+    const l2=words.slice(mid).join(' ');
+    el.innerHTML=`<tspan x="210" y="204">${l1}</tspan><tspan x="210" y="221">${l2}</tspan>`;
+  }
+}
+
 function updateWeekLabel(){
   const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],m=getActiveMelody();
   weekLabel.textContent=`${days[new Date().getDay()]} · ${notes.length}/${m.total}`;
   if(navSongLabel)navSongLabel.textContent=m.name;
   lcdProgress.textContent=`${notes.length} / ${m.total}`;
+  updateDialLabel();
 }
 
 // ── Time Setup ───────────────────────────────────────────────────────
