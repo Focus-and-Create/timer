@@ -1147,8 +1147,6 @@ document.addEventListener('keydown',e=>{
 
 // ── Init ─────────────────────────────────────────────────────────────
 loadState();
-initRoughUI();
-initRoughDial();
 soundToggle.classList.toggle('on',soundOn);
 renderMelodyDots();renderPianoKeys();
 updateDisplays();updateDial();updateWeekLabel();
@@ -1156,6 +1154,12 @@ updateAbandonVisibility();
 if(notes.length>0&&notes.length>=getActiveMelody().total)completeBanner.classList.add('show');
 setStatus('READY','#c9b3ff');
 setInterval(updateWeekLabel,60_000);
+
+// Draw rough borders only after all fonts are loaded so getBoundingClientRect is accurate
+document.fonts.ready.then(()=>{
+  initRoughUI();
+  initRoughDial();
+});
 </script>
 </body>
 </html>
