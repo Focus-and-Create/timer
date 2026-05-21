@@ -385,7 +385,7 @@ kbd{display:inline-block;padding:1px 6px;border:1px solid var(--muted);border-ra
 
         <!-- LEFT: Circular dial -->
         <div class="dial-area">
-          <svg id="dialSvg" viewBox="0 0 420 420" style="width:min(460px,46vw);height:min(460px,46vw);min-width:280px;min-height:280px;display:block;aspect-ratio:1/1;filter:url(#crayon-dial);">
+          <svg id="dialSvg" viewBox="0 0 420 420" style="width:min(460px,46vw);height:min(460px,46vw);min-width:280px;min-height:280px;display:block;aspect-ratio:1/1;">
             <!-- rough.js: outer fill, cream area, border strokes -->
             <g id="roughLayer"></g>
             <!-- Faint concentric rings inside cream zone -->
@@ -768,23 +768,28 @@ function initRoughDial(){
   if(!window.rough||!svg||!layer)return;
   const rc=rough.svg(svg);
   const ink='#6a6565';
-  const SHARED={roughness:1.2,bowing:0.5};
+  const SHARED={roughness:1.0,bowing:0.4};
   const ns='http://www.w3.org/2000/svg';
 
-  // Plain SVG circles for fills — guaranteed perfect circles, no roughjs distortion
+  // Perfect SVG circle fills — no filter applied so they stay truly round
   const outerFill=document.createElementNS(ns,'circle');
   outerFill.setAttribute('cx','210');outerFill.setAttribute('cy','210');
-  outerFill.setAttribute('r','198');outerFill.setAttribute('fill','#d0e7ff');
+  outerFill.setAttribute('r','194');outerFill.setAttribute('fill','#d0e7ff');
   layer.appendChild(outerFill);
 
   const innerFill=document.createElementNS(ns,'circle');
   innerFill.setAttribute('cx','210');innerFill.setAttribute('cy','210');
-  innerFill.setAttribute('r','167');innerFill.setAttribute('fill','#f5f0e8');
+  innerFill.setAttribute('r','162');innerFill.setAttribute('fill','#f5f0e8');
   layer.appendChild(innerFill);
 
-  // Rough.js strokes only — wobbly crayon border on top of the round fills
-  layer.appendChild(rc.circle(210,210,396,{...SHARED,fill:'none',stroke:ink,strokeWidth:3,seed:12}));
-  layer.appendChild(rc.circle(210,210,334,{...SHARED,fill:'none',stroke:ink,strokeWidth:2.5,seed:7}));
+  // Rough.js stroke borders — filter applied only to the stroke paths, not the fills
+  const outerStroke=rc.circle(210,210,396,{...SHARED,fill:'none',stroke:ink,strokeWidth:3,seed:12});
+  outerStroke.setAttribute('filter','url(#crayon-light)');
+  layer.appendChild(outerStroke);
+
+  const innerStroke=rc.circle(210,210,332,{...SHARED,fill:'none',stroke:ink,strokeWidth:2.5,seed:7});
+  innerStroke.setAttribute('filter','url(#crayon-light)');
+  layer.appendChild(innerStroke);
 }
 
 // ── Dial ─────────────────────────────────────────────────────────────
